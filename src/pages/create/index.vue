@@ -50,6 +50,7 @@ export default {
         content: '请输入准确的WiFi密码，WiFi密码错误将导致访客无法连接，您的WiFi密码将加密存储，请放心使用',
         success(res) {
           if (res.confirm) {
+            console.log('confirm')
             that.createWifi()
           }
         }
@@ -61,6 +62,8 @@ export default {
       var pass = this.pass.trim()
       var title = this.title.trim()
       var remark = this.remark.trim()
+      console.log('生成中')
+      var that = this
       wx.showLoading({
         title: '生成中',
       })
@@ -70,16 +73,16 @@ export default {
           bssid,
           pass,
           title,
-          remark
+          remark,
+          create: Date()
         },
         success (res) {
-          var id = res.data._id
-          // 生成小程序码
-          // wx.navigateTo({
-          //   url: `/pages/detail/main?wifi_id=${wifi_id}`
-          // })
+          console.log('add',res)
+          var id = res._id
+          that.getAccessToken(id)
         },
         fail (err) {
+          console.log('add fail')
           wx.showToast({
             icon: 'none',
             title: '新增记录失败'
@@ -89,12 +92,64 @@ export default {
           wx.hideLoading()
         }
       })
+    },
+    getAccessToken (id) {
+      var that = this
+      wx.cloud.callFunction({
+        name: 'token',
+        data: {},
+        success(res) {
+          var result = JSON.parse(res.result)
+          console.log('result',result)
+          that.createCode(id, result.access_token)
+        },
+        fail(err) {
+          console.log(err)
+        }
+      })
+
+    },
+    createCode (wifi_id, access_token) {
+      var that = this
+      console.log('wifi_id',wifi_id)
+      wx.cloud.callFunction({
+        name: 'code',
+        data: {
+          access_token,
+          scene: 'scene=1',
+          page: "pages/index/main",
+          auto_color: true
+        },
+        success(res) {
+          console.log('ready to detail', res)
+          wx.navigateTo({
+            url: `/pages/detail/main?wifi_id=${wifi_id}`
+          })
+        },
+        fail(err) {
+          console.log(err)
+        }
+      })
     }
   },
   mounted() {
     var args = getCurrentPageUrlArgs()
-    if (args.ssid) this.ssid=args.ssid
-    if (args.bssid) this.bssid=args.bssid
+    if (args.ssid) {
+      if (args.ssid !== this.ssid){
+        this.pass=''
+        this.title=''
+        this.remark=''
+      }
+      this.ssid=args.ssid
+    }
+    if (args.bssid) {
+      if (args.ssid !== this.ssid){
+        this.pass=''
+        this.title=''
+        this.remark=''
+      }
+      this.bssid=args.bssid
+    }
   }
 }
 </script>

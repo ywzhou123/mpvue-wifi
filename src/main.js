@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import App from './App'
-import request from './api/http'
+// import request from './api/http'
 import '../static/css/weui.css'
 
-Vue.prototype.$http = request
+// Vue.prototype.$http = request
 Vue.config.productionTip = false
 App.mpType = 'app'
 

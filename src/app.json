@@ -2,6 +2,7 @@
     "pages": [
         "pages/index/main",
         "pages/wifilist/main",
+        "pages/detail/main",
         "pages/create/main",
         "pages/logs/main",
         "pages/counter/main"

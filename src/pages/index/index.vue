@@ -153,41 +153,9 @@ export default {
     },
   },
   mounted() {
-    // 调用应用实例的方法获取全局数据
     this.getUserInfo()
     this.getWifiList()
     this.getConnectList()
-
-    wx.cloud.callFunction({
-      name: 'token',
-      data: {
-
-      },
-      success(res){
-        var result = JSON.parse(res.result)
-        wx.cloud.callFunction({
-          name: 'code',
-          data: {
-            access_token: result.access_token,
-            scene: 'scene=1',
-            page: "pages/index/main",
-            auto_color: true
-          },
-          success(res){
-            console.log(res)
-          },
-          fail(err){
-            console.log(err)
-          },
-          complete(){}
-        })
-      },
-      fail(err){
-        console.log(err)
-      },
-      complete(){}
-    })
-
   }
 }
 </script>
@@ -205,7 +173,7 @@ export default {
 .info{
   padding: 0 40px;
   font-size: 14px;
-  color: rgba(92, 89, 89, 0.603);
+  color: rgba(196, 164, 164, 0.603);
 }
 .btn {
   background-color: white;
