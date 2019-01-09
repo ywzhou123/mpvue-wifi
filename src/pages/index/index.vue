@@ -44,12 +44,18 @@
     </div>
   </div> -->
   <div class="container">
+    <div class="userinfo">
+      <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
+    </div>
     <div class="welcome">
       <h1 class="head">欢迎使用！</h1>
       <p class="info">在活动现场、会议室、公司前台、客厅等放置您的专属WiFi码，访客扫一扫即可免密连WiFi。还能查看微官网、产品介绍、公众号、一键签到！</p>
     </div>
     <div class="btn">
-      <button class="weui-btn" type="primary" @click="clickHandle">我要创建WiFi码</button>
+      <button class="weui-btn" type="primary" @click="clickHandle" v-if="canIUse">我要创建WiFi码</button>
+      <button class="weui-btn"  type="primary" open-type="getUserInfo" lang="zh_CN" @getuserinfo="bindGetUserInfo" v-else>
+        获取用户信息
+      </button>
     </div>
     <blank></blank>
     <div class="wifi-list">
@@ -81,7 +87,15 @@ import {getAccessToken, getWXACodeUnlimit} from '../../api/api.js'
 export default {
   data () {
     return {
-      userInfo: {},
+      canIUse: false,
+      userInfo: {
+        nickName:'',
+        avatarUrl:'',
+        gender:0,
+        province:'',
+        city:'',
+        country:''
+      },
       wifiList: [],
       connectList: [],
     }
@@ -94,7 +108,35 @@ export default {
   },
 
   methods: {
-    getUserInfo () {
+    authHandle(){
+      var that = this
+      // 可以通过 wx.getSetting 先查询一下用户是否授权了 "scope.userInfo" 这个 scope
+      wx.getSetting({
+        success(res) {
+          console.log('getSetting',res)
+          if (!res.authSetting['scope.userInfo']) {
+            wx.authorize({
+              scope: 'scope.userInfo',
+              success(res) {
+                console.log(res)
+                that.canIUse=true
+                that.getUserInfo()
+              },
+              fail(err){
+                console.log(err)
+                that.canIUse=false
+              }
+            })
+          }else{
+            that.canIUse=true
+            that.getUserInfo()
+          }
+        }
+      })
+    },
+    //获取用户信息
+    getUserInfo (e) {
+      console.log('getuser',e)
       // 调用登录接口
       var that = this;
       wx.login({
@@ -111,6 +153,12 @@ export default {
         }
       })
     },
+    bindGetUserInfo (e) {
+      console.log('bindGetUserInfo',e)
+      this.userInfo = e.mp.detail.userInfo
+      this.canIUse = true
+  },
+    //跳转wifilist
     clickHandle (e) {
       wx.navigateTo({
         url: '/pages/wifilist/main'
@@ -153,7 +201,7 @@ export default {
     },
   },
   mounted() {
-    this.getUserInfo()
+    this.authHandle()
     this.getWifiList()
     this.getConnectList()
   }
@@ -211,6 +259,19 @@ export default {
 }
 .connect-list{
   width: 100%;
+}
+.userinfo{
+  background-color: white;
+  width:100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.userinfo-avatar {
+  width: 128rpx;
+  height: 128rpx;
+  margin: 40rpx;
+  border-radius: 50%;
 }
 /* .userinfo {
   display: flex;
