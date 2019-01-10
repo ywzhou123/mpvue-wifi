@@ -57,7 +57,7 @@ export default {
     },
     deleteWifi(){
       wx.showLoading({
-        title: '生成中',
+        title: '删除中',
       })
       this.$db.collection('wifi_list').doc(this.wifi.id).remove({
         success(){
@@ -99,7 +99,6 @@ export default {
     }
   },
   mounted() {
-    wx.hideLoading()
     var args = getCurrentPageUrlArgs()
     console.log('args',args)
     if (args.wifi_id) {

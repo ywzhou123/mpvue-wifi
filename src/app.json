@@ -4,6 +4,7 @@
         "pages/wifilist/main",
         "pages/detail/main",
         "pages/create/main",
+        "pages/connect/main",
         "pages/logs/main",
         "pages/counter/main"
     ],

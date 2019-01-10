@@ -5,14 +5,16 @@
         <div v-if="startError">
           <span>{{startError}}</span>
         </div>
+        <img src="../../../static/image/logo.png" alt="" class="logo">
+        <span class="company">畅享无限</span>
         <div class="ssid">
-          {{ssid||'未连接Wifi'}}
+          <span>{{ssid||'未连接Wifi'}}</span>
         </div>
         <div class="create">
-          <button class="weui-btn" type="primary" v-if="ssid"  @click="clickHandle">快速创建WiFi码</button>
+          <button class="weui-btn" type="primary" :disabled="disabled"  @click="clickHandle">快速创建WiFi码</button>
         </div>
       </div>
-      <div class="title" v-if="wifiList">
+      <div class="title" v-if="wifiList.length">
         <span v-if="wifiListError">{{wifiListErrorInfo}}</span>
         <span v-else>或选择 下可用WiFi，点击去创建</span>
       </div>
@@ -37,10 +39,10 @@ export default {
       startError: '',//初始化错误提示
       wifiListError: false, //wifi列表错误显示开关
       wifiListErrorInfo: '',//wifi列表错误详细
-      system: '7', //版本号
-      platform: 'andriod', //系统 android
-      ssid: 'WeiWei', //wifi帐号(必填)
-      bssid: 'ad:if:ja:wo:pp', //设备号 自动获取
+      system: '', //版本号
+      platform: '', //系统 android
+      ssid: '', //wifi帐号(必填)
+      bssid: '', //设备号 自动获取
       endError: '', //连接最后的提示
       wifiList: [],//附近的wifi
     }
@@ -49,6 +51,12 @@ export default {
     wifiListSortd(){
       var that = this
       return this.wifiList.sort((a,b)=>(a.SSID === that.ssid && a.BSSID === that.bssid) || a.signalStrength>=b.signalStrength).reverse()
+    },
+    disabled(){
+      if (this.ssid){
+        return false
+      }
+      return true
     }
   },
   methods: {
@@ -96,6 +104,7 @@ export default {
       console.log('start getCurrentWifi')
       if (this.startError) {
         wx.showToast({
+          icon: 'none',
           title: 'WiFi初始化失败',
         })
         return
@@ -207,16 +216,31 @@ export default {
 .wifilist {
   width: 100%;
 }
+.current{
+  display:flex;
+  flex-direction:column;
+}
+.logo{
+  width: 40px;
+  height: 40px;
+  align-self: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+.company{
+  font-size: 12px;
+  color:#ccc;
+  align-self: center;
+}
 .current, .wifi-list{
   background-color: #fff;
 }
 .ssid {
   text-align: center;
-  padding-top: 60px;
-  padding-bottom: 40px;
+  padding-top: 40px;
 }
 .create{
-  padding: 60px;
+  padding: 40px;
   text-align: center;
 }
 .title{

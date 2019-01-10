@@ -69,7 +69,7 @@
       <div class="title">最近使用</div>
     </div>
     <div class="connect-list">
-      <div v-for="(item, index) in connectList" :key="index" @click="clickConnectHandle(item._id, $event)">
+      <div v-for="(item, index) in connectList" :key="index">
         <connect :connect="item"></connect>
       </div>
     </div>
@@ -199,9 +199,6 @@ export default {
           that.endError = res.errMsg ;
         }
       })
-    },
-    clickConnectHandle(connect_id, e){
-      console.log('click connect', connect_id, e)
     },
     clickWifiHandle(wifi_id, e){
       console.log('click wifi', wifi_id, e)

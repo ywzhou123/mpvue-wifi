@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container"  @click="clickConnectHandle(connect.wifi_id, $event)">
     <div class="connect">
       <div class="ssid">
         {{ssid}}
@@ -40,12 +40,23 @@ export default {
   methods: {
     getWifiDetail(wifi_id){
       const that = this;
-      this.$db.collection('wifi_list').doc(wifi_id).get({
-        success(res) {
-          that.ssid = res.data.ssid
-        }
-      })
-    }
+      if (wifi_id) {
+        this.$db.collection('wifi_list').doc(wifi_id).get({
+          success(res) {
+            that.ssid = res.data.ssid
+          }
+        })
+      }
+    },
+    clickConnectHandle(e){
+      var wifi_id = this.connect.wifi_id
+      console.log('click connect', wifi_id)
+      if (wifi_id){
+        wx.navigateTo({
+          url: `/pages/connect/main?wifi_id=${wifi_id}`
+        })
+      }
+    },
   },
   created() {
     this.getWifiDetail(this.connect.wifi_id)

@@ -120,8 +120,8 @@ export default {
         name: 'code',
         data: {
           access_token,
-          scene: 'scene=1',
-          page: "pages/index/main",
+          scene: wifi_id,
+          page: "pages/connect/main",
           auto_color: true
         },
         success(res) {
