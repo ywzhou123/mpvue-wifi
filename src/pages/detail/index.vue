@@ -4,9 +4,9 @@
       <codepic :wifi="wifi"></codepic>
     </div>
     <div class="share">点击查看大图，分享给朋友</div>
-    <div class="continue"  @click="continueHandle">继续创建</div>
-    <div class="back" @click="updateHandle">修改</div>
-    <div class="delete" @click="deleteHandle">删除</div>
+    <button class="weui-btn" type="primary" @click="continueHandle">继续创建</button>
+    <button class="weui-btn" type="primary" @click="updateHandle">修改</button>
+    <button class="weui-btn" type="primary" @click="deleteHandle">删除</button>
   </div>
 </template>
 
@@ -27,7 +27,7 @@ export default {
         pass: '',
         title: '',
         remark: '',
-        code:''
+        codePic:''
       }
     }
   },
@@ -81,6 +81,13 @@ export default {
       this.$db.collection('wifi_list').doc(wifi_id).get({
         success(res) {
           that.wifi = Object.assign({}, that.wifi, res.data)
+          wx.getStorage({
+            key: wifi_id,
+            success(res) {
+              console.log('get store',res)
+              that.wifi.codePic=res.data
+            }
+          })
         },
         fail(){
           wx.showToast({
@@ -92,6 +99,7 @@ export default {
     }
   },
   mounted() {
+    wx.hideLoading()
     var args = getCurrentPageUrlArgs()
     console.log('args',args)
     if (args.wifi_id) {
@@ -108,7 +116,7 @@ export default {
 </script>
 
 <style scoped>
-.codepic-cont{
+.codepic-cont, .weui-btn{
   margin: 20px 0;
   width: 60%;
 }
@@ -116,8 +124,5 @@ export default {
   text-align: center;
   font-size: 12px;
   color: rgba(196, 164, 164, 0.603);
-}
-.continue{
-  color: green;
 }
 </style>

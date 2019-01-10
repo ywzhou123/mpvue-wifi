@@ -59,7 +59,7 @@
     </div>
     <blank></blank>
     <div class="wifi-list">
-      <div v-for="(item, index) in wifiList" :key="index">
+      <div v-for="(item, index) in wifiList" :key="index" @click="clickWifiHandle(item._id,$event)">
         <wifi :wifi="item"></wifi>
         <blank></blank>
       </div>
@@ -69,7 +69,9 @@
       <div class="title">最近使用</div>
     </div>
     <div class="connect-list">
-      <connect v-for="(item, index) in connectList" :key="index" :connect="item"></connect>
+      <div v-for="(item, index) in connectList" :key="index" @click="clickConnectHandle(item._id, $event)">
+        <connect :connect="item"></connect>
+      </div>
     </div>
     <blank height="40px" ></blank>
     <div class="weui-footer  weui-footer_fixed-bottom">
@@ -82,7 +84,6 @@
 import wifi from './wifi'
 import connect from './connect'
 import blank from '../../components/blank'
-import {getAccessToken, getWXACodeUnlimit} from '../../api/api.js'
 
 export default {
   data () {
@@ -199,6 +200,17 @@ export default {
         }
       })
     },
+    clickConnectHandle(connect_id, e){
+      console.log('click connect', connect_id, e)
+    },
+    clickWifiHandle(wifi_id, e){
+      console.log('click wifi', wifi_id, e)
+      if (wifi_id){
+        wx.navigateTo({
+          url: `/pages/detail/main?wifi_id=${wifi_id}`
+        })
+      }
+    }
   },
   mounted() {
     this.authHandle()

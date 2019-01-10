@@ -10,15 +10,14 @@
         </div>
         <div class="create">
           <button class="weui-btn" type="primary" v-if="ssid"  @click="clickHandle">快速创建WiFi码</button>
-          <span v-else>未连接Wifi</span>
         </div>
       </div>
-      <div class="title" v-if="wifiList">或选择 下可用WiFi，点击去创建</div>
+      <div class="title" v-if="wifiList">
+        <span v-if="wifiListError">{{wifiListErrorInfo}}</span>
+        <span v-else>或选择 下可用WiFi，点击去创建</span>
+      </div>
       <div class="wifi-list">
-        <div v-if="wifiListError">
-          <span>{{wifiListErrorInfo}}</span>
-        </div>
-        <div v-for="(item, index) in wifiListSortd" :key="index">
+        <div v-for="(item, index) in wifiListSortd" :key="index" @click="clickWifiHandle(item.SSID, item.BSSID, $event)">
           <wifi :wifi="item" :ssid="ssid" :bssid="bssid"></wifi>
         </div>
       </div>
@@ -38,38 +37,12 @@ export default {
       startError: '',//初始化错误提示
       wifiListError: false, //wifi列表错误显示开关
       wifiListErrorInfo: '',//wifi列表错误详细
-      system: 'andriod', //版本号
-      platform: '7', //系统 android
+      system: '7', //版本号
+      platform: 'andriod', //系统 android
       ssid: 'WeiWei', //wifi帐号(必填)
-      // pass: 'ywzhou123', //无线网密码(必填)
       bssid: 'ad:if:ja:wo:pp', //设备号 自动获取
       endError: '', //连接最后的提示
-      wifiList: [
-        {
-          SSID: 'WeiWei',
-          BSSID: 'ad:if:ja:wo:pp',
-          secure: true,
-          signalStrength: 88
-        },
-        {
-          SSID: 'WeiWei2',
-          BSSID: 'ad:if:ja:wo:pp2',
-          secure: true,
-          signalStrength: 55
-        },
-        {
-          SSID: 'WeiWei3',
-          BSSID: 'ad:if:ja:wo:pp3',
-          secure: false,
-          signalStrength: 1
-        },
-        {
-          SSID: 'WeiWei4',
-          BSSID: 'ad:if:ja:wo:pp4',
-          secure: false,
-          signalStrength: 73
-        }
-      ] //附近的wifi
+      wifiList: [],//附近的wifi
     }
   },
   computed: {
@@ -104,43 +77,85 @@ export default {
     // 初始化 Wi-Fi 模块。
     startWifi () {
       var that = this
+      this.startError=''
       wx.startWifi({
         success: function (res) {
           console.log('startwifi',res)
-          // that.startError = ''
-          that.getList();
+          // that.getCurrentWifi()
+          // that.getList();
         },
         fail: function (res) {
           that.startError = res.errMsg;
-          wx.showToast({
-            title: 'WiFi初始化失败',
-          })
+          // wx.showToast({
+          //   title: 'WiFi初始化失败',
+          // })
         }
       })
     },
     getCurrentWifi () {
-      var that = this;
+      console.log('start getCurrentWifi')
+      if (this.startError) {
+        wx.showToast({
+          title: 'WiFi初始化失败',
+        })
+        return
+      }
+      var that = this
+      that.ssid = ''
+      that.bssid = ''
+      that.startError = ''
       wx.getConnectedWifi({
         success (res) {
-          that.ssid = res.SSID;
-          that.bssid = res.BSSID;
-          // that.secure = res.secure;
-          // that.signalStrength = res.signalStrength;
-          // that.startError = ''
+          console.log('getConnectedWifi ok: ',res)
+          that.ssid = res.wifi.SSID
+          that.bssid = res.wifi.BSSID
         },
         fail (res) {
-          that.startError = res.errMsg;
+          console.log('getConnectedWifi fail: ',res)
+          that.startError = res.errMsg
         }
       })
     },
-    // 获取wifi列表
-    getList () {
+    // 监听wifi列表
+    onGetWifiList () {
+      var that = this;
+      //监听获取到 Wi-Fi 列表数据
+      wx.onGetWifiList(function (res) {
+        //获取列表
+        console.log('onGetWifiList',res)
+        if (res.wifiList.length) {
+          that.wifiList=res.wifiList;
+        } else {
+          that.wifiListError = true;
+          that.wifiListErrorInfo = '未搜索到附近的WiFi' ;
+        }
+        // 设置 wifiList 中 AP 的相关信息。在 onGetWifiList 回调后调用，iOS特有接口。
+        // if (res.wifiList.length && that.platform === 'ios') {
+        //   wx.setWifiList({
+        //     wifiList: [{
+        //       SSID: res.wifiList[0].SSID,
+        //       BSSID: res.wifiList[0].BSSID,
+        //       password: '123456'
+        //     }]
+        //   })
+        // } else {
+        //   wx.setWifiList({
+        //     wifiList: []
+        //   })
+        // }
+      })
+    },
+    // 请求获取wifi列表
+    getWifiList () {
+      var that = this
+      that.wifiList=[]
+      that.wifiListError = false
+      that.wifiListErrorInfo = ''
       try {
         //请求获取 Wi-Fi 列表
         wx.getWifiList({
           success (res) {
-            //安卓执行方法
-            that.AndroidList();
+            console.log('getwifilist',res)
           },
           fail (res) {
             that.wifiListError = true ;
@@ -150,36 +165,8 @@ export default {
       } catch (error) {
         that.IosList();
       }
-      var that = this;
-      //安卓执行方法
-      // if (that.platform == 'android') {
-
-      // }
-      //IOS执行方法
-      // if (that.platform == 'ios') {
-      //   that.IosList();
-      // }
-
     },
-    AndroidList () {
-      try {
-        var that = this;
-        //监听获取到 Wi-Fi 列表数据
-        wx.onGetWifiList(function (res) {
-          //获取列表
-          console.log('onGetWifiList',res)
-          if (res.wifiList.length) {
-            that.wifiList=res.wifiList;
-          } else {
-            that.wifiListError = true;
-            that.wifiListErrorInfo = '未搜索到附近的WiFi' ;
-          }
-        })
-      } catch (error) {
-        that.IosList()
-      }
 
-    },
     IosList () {
       var that = this;
       that.wifiListError = true ;
@@ -189,11 +176,29 @@ export default {
       wx.navigateTo({
         url: `/pages/create/main?ssid=${this.ssid}&bssid=${this.bssid}`
       })
+    },
+    clickWifiHandle(ssid, bssid, e){
+      console.log('click wifi: ',ssid, bssid, e)
+      wx.navigateTo({
+        url: `/pages/create/main?ssid=${ssid}&bssid=${bssid}`
+      })
     }
   },
   created() {
-    // this.getCurrentWifi()
-    // this.getSystemInfo()
+    this.getSystemInfo() // 获取系统信息 初始化wifi
+    this.onGetWifiList() // 监听wifi列表的获取
+  },
+  mounted() {
+    if (this.startError) {
+      wx.showToast({
+        icon: 'none',
+        title: 'WiFi初始化失败',
+      })
+      return
+    } else {
+      this.getCurrentWifi() // 获取当前已连接的wifi信息
+      this.getWifiList(); // 请求wifi列表
+    }
   },
 }
 </script>

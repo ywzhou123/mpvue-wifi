@@ -3,6 +3,9 @@
     <div class="image">
       <img src="../../../static/image/wifi-example.png" alt="" class="img">
     </div>
+    <div class="errMsg" v-if="codeErrMsg">
+      <span>生成小程序码错误：{{codeErrMsg}}</span>
+    </div>
     <form class="form">
       <input type="text" class="ssid" :value="ssid" disabled/>
       <input type="password" class="pass" placeholder="输入WiFi密码（必填）" v-model="pass" auto-focus/>
@@ -23,7 +26,8 @@ export default {
       bssid: '',
       pass: '',
       title: '',
-      remark: ''
+      remark: '',
+      codeErrMsg: ''
     }
   },
   methods: {
@@ -87,12 +91,11 @@ export default {
             icon: 'none',
             title: '新增记录失败'
           })
-        },
-        complete () {
           wx.hideLoading()
         }
       })
     },
+    //调云函数 获取token
     getAccessToken (id) {
       var that = this
       wx.cloud.callFunction({
@@ -109,6 +112,7 @@ export default {
       })
 
     },
+    // 调云函数 创建小程序码
     createCode (wifi_id, access_token) {
       var that = this
       console.log('wifi_id',wifi_id)
@@ -122,12 +126,33 @@ export default {
         },
         success(res) {
           console.log('ready to detail', res)
-          wx.navigateTo({
-            url: `/pages/detail/main?wifi_id=${wifi_id}`
-          })
+          var result = JSON.parse(res.result)
+          console.log('result',result)
+          if (result.errcode === 0) {
+            wx.setStorage({
+              key: wifi_id,
+              data: result
+            })
+            wx.navigateTo({
+              url: `/pages/detail/main?wifi_id=${wifi_id}`
+            })
+          } else {
+            wx.showToast({
+              icon: 'none',
+              title: '生成小程序码失败'
+            })
+          }
         },
         fail(err) {
-          console.log(err)
+          console.log('get code fail: ', err)
+          that.codeErrMsg = err.errMsg
+          wx.showToast({
+            icon: 'none',
+            title: '生成小程序码失败'
+          })
+        },
+        complete () {
+          wx.hideLoading()
         }
       })
     }
@@ -176,5 +201,10 @@ input{
 }
 .weui-btn{
   margin: 20px;
+}
+.errMsg{
+  color: red;
+  font-size: 12px;
+  text-align: center;
 }
 </style>

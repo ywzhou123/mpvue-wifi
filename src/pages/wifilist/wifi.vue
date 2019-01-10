@@ -11,7 +11,7 @@
           <div class="weui-flex__item item-secure">
             <icon type="info" size="20" v-if="wifi.secure"/>
           </div>
-          <div class="weui-flex__item">
+          <div class="weui-flex__item item-signalStrength">
             <div class="signalStrength">{{signalStrengthLevel}}</div>
           </div>
         </div>
@@ -82,6 +82,9 @@ export default {
 }
 .item-ssid{
   flex: 1;
+}
+.item-signalStrength{
+  margin-right: 10px;
 }
 .signalStrength{
   width: 40px;
