@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { getCurrentPageUrlArgs, isIncludeChinese } from '../../utils'
+import { isIncludeChinese } from '../../utils'
 
 export default {
   data() {
@@ -78,12 +78,13 @@ export default {
           pass,
           title,
           remark,
-          create: Date()
+          count: 0,
+          create: Date(),
         },
         success (res) {
           console.log('add',res)
-          var id = res._id
-          that.getAccessToken(id)
+          var wifi_id = res._id
+          that.getCodeUrl(wifi_id)
         },
         fail (err) {
           console.log('add fail')
@@ -95,51 +96,30 @@ export default {
         }
       })
     },
-    //调云函数 获取token
-    getAccessToken (id) {
-      var that = this
-      wx.cloud.callFunction({
-        name: 'token',
-        data: {},
-        success(res) {
-          var result = JSON.parse(res.result)
-          console.log('result',result)
-          that.createCode(id, result.access_token)
-        },
-        fail(err) {
-          console.log(err)
-        }
-      })
 
-    },
-    // 调云函数 创建小程序码
-    createCode (wifi_id, access_token) {
+    getCodeUrl(wifi_id){
       var that = this
-      console.log('wifi_id',wifi_id)
       wx.cloud.callFunction({
-        name: 'code',
+        name: 'wifi',
         data: {
-          access_token,
           scene: wifi_id,
-          page: "pages/connect/main",
-          auto_color: true
         },
         success(res) {
-          console.log('ready to detail', res)
-          var result = JSON.parse(res.result)
-          console.log('result',result)
-          if (result.errcode === 0) {
-            wx.setStorage({
-              key: wifi_id,
-              data: result
-            })
-            wx.navigateTo({
-              url: `/pages/detail/main?wifi_id=${wifi_id}`
-            })
-          } else {
-            wx.showToast({
-              icon: 'none',
-              title: '生成小程序码失败'
+          var result = res.result
+          console.log('url: ',result)
+          if (result.status === 200){
+            that.datapic = result.data
+            that.$db.collection('wifi_list').doc(wifi_id).update({
+              data: {
+                code_url: result.data
+              },
+              success: console.log,
+              fail: console.error,
+              complete(){// 跳转详情页
+                wx.navigateTo({
+                  url: `/pages/detail/main?wifi_id=${wifi_id}`
+                })
+              }
             })
           }
         },
@@ -158,22 +138,24 @@ export default {
     }
   },
   mounted() {
-    var args = getCurrentPageUrlArgs()
-    if (args.ssid) {
-      if (args.ssid !== this.ssid){
+    var query = this.$root.$mp.query
+    var ssid = query.ssid
+    if (ssid) {
+      if (ssid !== this.ssid){
         this.pass=''
         this.title=''
         this.remark=''
       }
-      this.ssid=args.ssid
+      this.ssid=ssid
     }
-    if (args.bssid) {
-      if (args.ssid !== this.ssid){
+    var bssid = query.bssid
+    if (bssid) {
+      if (ssid !== this.ssid){
         this.pass=''
         this.title=''
         this.remark=''
       }
-      this.bssid=args.bssid
+      this.bssid=bssid
     }
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="title">{{wifi.title}}</div>
-    <img :src="wifi.codePic" alt="" class="img">
+    <img :src="wifi.code_url" alt="" class="img" />
     <div class="desc">扫一扫，连接WiFi</div>
     <div class="wifi-info">
       <icon type="success" size="20"/>
@@ -30,10 +30,10 @@ export default {
         title: '',
         remark: '',
         count: 0,
-        codePic: '../../../static/image/codepic-example.png'
+        code_url: '',
       }
     }
-  }
+  },
 }
 </script>
 

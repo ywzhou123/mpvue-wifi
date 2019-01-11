@@ -1,49 +1,5 @@
 <template>
-  <!-- <div class="container" @click="clickHandle('test click', $event)">
-
-    <div class="userinfo" @click="bindViewTap">
-      <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
-      <div class="userinfo-nickname">
-        <card :text="userInfo.nickName"></card>
-      </div>
-    </div>
-
-    <div class="usermotto">
-      <div class="user-motto">
-        <card :text="motto"></card>
-      </div>
-    </div>
-
-    <form class="form-container">
-      <input type="text" class="form-control" v-model="motto" placeholder="v-model" />
-      <input type="text" class="form-control" v-model.lazy="motto" placeholder="v-model.lazy" />
-      <button class="weui-btn" type="primary">页面主操作 Normal</button>
-    </form>
-    <a href="/pages/counter/main" class="counter">去往Vuex示例页面</a>
-    <div class="wifi-list">
-      <div class="">
-
-      </div>
-      <div v-if="startError">
-        <span>{{startError}}</span>
-      </div>
-      <div v-if="wifiListError">
-        <span>{{wifiListErrorInfo}}</span>
-      </div>
-      <div><span>版本号: {{system}}</span></div>
-      <div><span>系统: {{platform}}</span></div>
-      <div><span>设备号: {{bssid}}</span></div>
-      <div><span>wifi帐号: {{ssid}}</span></div>
-      <div><span>wifi密码: {{pass}}</span></div>
-      <div v-if='endError'><span>连接最后的提示: {{endError}}</span></div>
-      <div v-for='item in wifiList' :key='item.SSID'>
-        <span>SSID: {{item.SSID}}</span>
-        <span>信号强度: {{item.signalStrength}}</span>
-        <span v-if='item.secure'>有密码</span>
-      </div>
-    </div>
-  </div> -->
-  <div class="container">
+  <div class="container" :style="{height:height}" >
     <div class="userinfo">
       <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
     </div>
@@ -74,7 +30,7 @@
       </div>
     </div>
     <blank height="40px" ></blank>
-    <div class="weui-footer  weui-footer_fixed-bottom">
+    <div class="weui-footer">
       <div class="weui-footer__text"><span class="text">Powered by 畅享无限</span></div>
     </div>
   </div>
@@ -89,6 +45,7 @@ export default {
   data () {
     return {
       canIUse: false,
+      openid:'',
       userInfo: {
         nickName:'',
         avatarUrl:'',
@@ -99,6 +56,7 @@ export default {
       },
       wifiList: [],
       connectList: [],
+      height:'',
     }
   },
 
@@ -109,6 +67,25 @@ export default {
   },
 
   methods: {
+    setClientHeight(){
+      let that = this;
+      // 获取系统信息
+      wx.getSystemInfo({
+        success: function (res) {
+          // 获取可使用窗口宽度
+          let clientHeight = res.windowHeight;
+          // 获取可使用窗口高度
+          let clientWidth = res.windowWidth;
+          // 算出比例
+          let ratio = 750 / clientWidth;
+          // 算出高度(单位rpx)
+          let height = clientHeight * ratio;
+          // 设置高度
+          that.height=`${height}rpx`
+          console.log('heith: ',res,that)
+        }
+      })
+    },
     authHandle(){
       var that = this
       // 可以通过 wx.getSetting 先查询一下用户是否授权了 "scope.userInfo" 这个 scope
@@ -142,6 +119,7 @@ export default {
       var that = this;
       wx.login({
         success () {
+          that.getOpenId()
           wx.getUserInfo({
             success(res){
               that.userInfo = res.userInfo
@@ -154,11 +132,26 @@ export default {
         }
       })
     },
+    getOpenId(){
+      var that = this
+      console.log('get openid: ')
+      wx.cloud.callFunction({
+        name: 'login',
+        success(res) {
+          console.log('openid: ',res.result)
+          var result = res.result
+          that.openid=result.openid
+        },
+        fail(err){
+          console.log('openid fail',err)
+        }
+      })
+    },
     bindGetUserInfo (e) {
       console.log('bindGetUserInfo',e)
       this.userInfo = e.mp.detail.userInfo
       this.canIUse = true
-  },
+    },
     //跳转wifilist
     clickHandle (e) {
       wx.navigateTo({
@@ -168,7 +161,10 @@ export default {
 
     //获取数据库 wifi_list
     getWifiList () {
-      this.$db.collection('wifi_list').get()
+      var that = this;
+      this.$db.collection('wifi_list').limit(10).where({
+        _openid: that.openid,
+      }).get()
         .then(res=>{
           this.wifiList = res.data
         })
@@ -176,29 +172,14 @@ export default {
     },
     //获取数据库 connect_list
     getConnectList () {
-      this.$db.collection('connect_list').get()
+      var that = this;
+      this.$db.collection('connect_list').limit(10).where({
+        _openid: that.openid,
+      }).get()
         .then(res=>{
           this.connectList = res.data
         })
         .catch(console.error)
-    },
-    //连接wifi
-    Connected () {
-      var that = this;
-      wx.onWifiConnected(function(res){
-        console.log('onWifiConnected: ', res.wifi)
-      })
-      wx.connectWifi({
-        SSID: that.ssid,
-        BSSID: that.bssid,
-        password: that.pass,
-        success(res) {
-          that.endError = 'wifi连接成功' ;
-        },
-        fail(res) {
-          that.endError = res.errMsg ;
-        }
-      })
     },
     clickWifiHandle(wifi_id, e){
       console.log('click wifi', wifi_id, e)
@@ -207,13 +188,34 @@ export default {
           url: `/pages/detail/main?wifi_id=${wifi_id}`
         })
       }
+    },
+    // uploadFileHandle(){
+    //   wx.cloud.uploadFile({
+    //     cloudPath: 'background.png', // 上传至云端的路径
+    //     filePath: '/static/image/background.png', // 小程序临时文件路径
+    //     success: res => {
+    //       // 返回文件 ID
+    //       console.log('文件 ID',res.fileID)
+    //     },
+    //     fail(err){
+    //       console.log(err)
+    //     }
+    //   })
+    // },
+  },
+  watch: {
+    openid: function (val, oldVal) {
+      if ( val !== oldVal){
+        console.log('watch openid')
+        this.getWifiList()
+        this.getConnectList()
+      }
     }
   },
   mounted() {
+    // this.setClientHeight()
     this.authHandle()
-    this.getWifiList()
-    this.getConnectList()
-  }
+  },
 }
 </script>
 

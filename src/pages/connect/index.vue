@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :style="{height: height,backgroundImage: 'url(' + img + ')' }" >
+  <div class="container"  :style="{height: height}" >
     <div class="header">
       <span>欢迎使用畅享无限WiFi</span>
     </div>
@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import { getCurrentPageUrlArgs } from '../../utils'
 import Img from '../../../static/image/background.png'
 
 export default {
@@ -26,13 +25,20 @@ export default {
       height:'',
       disabled: true,
       wifi: {
-        id: '',
+        _id: '',
         ssid: '',
         bssid: '',
         pass: '',
         title: '',
         remark: '',
+        count: 0,
+        code_url: '',
       }
+    }
+  },
+  computed: {
+    backgroundImage () {
+      return `url(${this.img})`
     }
   },
   methods: {
@@ -43,6 +49,9 @@ export default {
         wx.showLoading({
           title: '连接中',
         })
+        wx.onWifiConnected(function(res){
+          console.log('onWifiConnected: ', res.wifi)
+        })
         wx.connectWifi({
           SSID: that.wifi.ssid,
           password: that.wifi.pass,
@@ -51,6 +60,13 @@ export default {
             wx.showToast({
               icon: 'success',
               title: '连接成功',
+            })
+            that.$db.collection('wifi_list').doc(that.wifi._id).update({
+              data: {
+                count: that.wifi.count+1
+              },
+              success: console.log,
+              fail: console.error,
             })
           },
           fail(err){
@@ -74,15 +90,21 @@ export default {
     getWifiDetail(wifi_id){
       const that = this;
       if (wifi_id) {
+        console.log('get wifi: ', wifi_id)
         this.$db.collection('wifi_list').doc(wifi_id).get({
           success(res) {
+            console.log("wifi:",res.data)
             that.wifi = Object.assign({}, that.wifi, res.data)
             that.disabled = false
           },
-          fail(){
+          fail(err){
+            console.log('get wifi fail: ', err)
             wx.showToast({
               icon: 'none',
-              title: '获取详情失败',
+              title: 'WiFi已被分享者删除',
+            })
+            wx.navigateTo({
+              url: '/pages/index/main'
             })
           }
         })
@@ -112,20 +134,16 @@ export default {
     // 设置高度
     this.setClientHeight()
     var wifi_id
-    // 小程序扫码进入
-    const scene = decodeURIComponent(query.scene)
-    console.log('scene: ', scene)
-    if (scene){
-      wifi_id = scene
+    var query = this.$root.$mp.query
+    console.log('query: ', query)
+
+    if (query.scene && query.scene !== "scene"){
+      wifi_id = decodeURIComponent(query.scene)
     } else {
-      var args = getCurrentPageUrlArgs()
-      console.log('args',args)
-      if (args.wifi_id){
-        wifi_id = args.wifi_id
-      }
+      wifi_id = query.wifi_id
     }
+
     if (wifi_id) {
-      this.wifi.id = wifi_id
       this.getWifiDetail(wifi_id)
     }else{
       wx.showToast({
@@ -141,6 +159,7 @@ export default {
 .container{
   justify-content: start;
   background-color: green;
+  background-image: url('/static/image/background.png')
 }
 .header{
   font-size:24px;

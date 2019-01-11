@@ -1,11 +1,19 @@
 // 云函数入口文件
 const request = require('request')
 const cloud = require('wx-server-sdk')
-
+const fs = require('fs')
+const axios = require('axios')
 cloud.init()
-
-
-
+// axios.defaults.responseType = 'arraybuffer'
+// axios.interceptors.response.use( response  =>  {
+//   if  (response.data  ==  null  &&  response.config.responseType  ===  'json'  && response.request.responseText  !=  null) {
+//     try  {
+//       response.data  =  JSON.parse(response.request.responseText);
+//     }  catch  (e) {
+//     }
+//   }
+//   return  response;
+// }
 // 云函数入口函数
 exports.main = async (event, context) => {
   // 获取token
@@ -25,17 +33,68 @@ exports.main = async (event, context) => {
   }
   return new Promise((resolve, reject) => {
     try {
-      request({
-        url,
-        method: "POST",
-        headers: {
+      axios({
+        method: 'post',
+        url: url,
+        data: JSON.stringify(args),
+        // json:true,
+        encoding: null,
+        // responseType: 'arraybuffer',
+        headers:{
           "content-type": "application/json",
-        },
-        body: JSON.stringify(args)
-      }, (err, resp, body) => {
-        if (err) return reject(err)
-        return resolve(body)
-      })
+        }
+      }).then(response => {
+        const data = response.data
+        console.log('response.data: ',response.data)
+        // console.log('response.body: ', response.body)
+        // base64 = new Buffer(response.data, 'utf8').toString('base64');
+        // var result = response.data || response.body
+        // var base64Img = result.toString('base64');
+        // var dataBuffer = new Buffer(base64Img, 'base64');
+        // const fileStream = fs.createReadStream(data)
+        // console.log('stream',fileStream)
+        // const res = cloud.uploadFile({
+        //   cloudPath: 'upload-codepic.png',
+        //   fileContent: fileStream,
+        // })
+        // console.log('res', res)
+        // resolve(res)
+        resolve(response.data)
+      }, err => {
+        reject(err)
+      }).catch((err) => {
+          reject(err)
+        })
+      // request({
+      //   url,
+      //   method: "POST",
+      //   responseType: 'arraybuffer',
+      //   headers: {
+      //     "content-type": "application/json;charset=UTF-8",
+      //   },
+      //   body: JSON.stringify(args)
+      // }, (err, resp, body) => {
+      //   console.log('result', body)
+      //   if (err) return reject(err)
+      //   var result = body.result
+      //   try {
+      //     // 可以解析成json格式 说明返回错误
+      //     result = JSON.parse(result)
+      //   } catch (error) {
+      //     console.log('err',error)
+      //     if (result){
+      //       var base64Img = result.toString('base64');  // base64图片编码字符串
+      //       var dataBuffer = new Buffer(base64Img, 'base64');
+      //       const fileStream = fs.createReadStream(dataBuffer)
+      //       const res = cloud.uploadFile({
+      //         cloudPath: 'upload-codepic.png',
+      //         fileContent: fileStream,
+      //       })
+      //       return resolve(res)
+      //     }
+      //   }
+      //   return resolve(body)
+      // })
     } catch (err) {
       return reject(err)
     }

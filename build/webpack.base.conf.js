@@ -46,7 +46,8 @@ let baseWebpackConfig = {
     extensions: ['.js', '.vue', '.json'],
     alias: {
       'vue': 'mpvue',
-      '@': resolve('src')
+      '@': resolve('src'),
+      'axios': 'axios/dist/axios'
     },
     symlinks: false,
     aliasFields: ['mpvue', 'weapp', 'browser'],
@@ -71,6 +72,7 @@ let baseWebpackConfig = {
       {
         test: /\.js$/,
         include: [resolve('src'), resolve('test')],
+        exclude: /cloudfunctions/,
         use: [
           'babel-loader',
           {

@@ -1,5 +1,5 @@
 {
-  "name": "code",
+  "name": "upload",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,8 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
-    "fs": "0.0.1-security",
     "wx-server-sdk": "latest"
   }
 }
