@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :style="{height:height}" >
+  <div class="container" :style="{heightHeight:min_height}" >
     <div class="userinfo">
       <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
     </div>
@@ -56,7 +56,7 @@ export default {
       },
       wifiList: [],
       connectList: [],
-      height:'',
+      min_height:'',
     }
   },
 
@@ -65,7 +65,17 @@ export default {
     connect,
     blank
   },
-
+  async onPullDownRefresh() {
+    // to doing..
+    console.log('lalala')
+    wx.showLoading({
+      title: 'Loading',
+    })
+    this.getWifiList()
+    this.getConnectList()
+    // 停止下拉刷新
+    wx.stopPullDownRefresh();
+  },
   methods: {
     setClientHeight(){
       let that = this;
@@ -81,8 +91,7 @@ export default {
           // 算出高度(单位rpx)
           let height = clientHeight * ratio;
           // 设置高度
-          that.height=`${height}rpx`
-          console.log('heith: ',res,that)
+          that.min_height=`${height}rpx`
         }
       })
     },
@@ -213,7 +222,7 @@ export default {
     }
   },
   mounted() {
-    // this.setClientHeight()
+    this.setClientHeight()
     this.authHandle()
   },
 }

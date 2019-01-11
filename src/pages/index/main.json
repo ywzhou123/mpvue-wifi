@@ -1,3 +1,4 @@
 {
-    "navigationBarTitleText": "畅享无限首页"
+    "navigationBarTitleText": "畅享无限首页",
+    "enablePullDownRefresh": true
 }

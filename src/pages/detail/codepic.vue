@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="title">{{wifi.title}}</div>
-    <img :src="wifi.code_url" alt="" class="img" />
+    <img :src="wifi.code_url" alt="" class="img" @click="onPreviewHandle"/>
     <div class="desc">扫一扫，连接WiFi</div>
     <div class="wifi-info">
       <icon type="success" size="20"/>
@@ -31,6 +31,21 @@ export default {
         remark: '',
         count: 0,
         code_url: '',
+      }
+    },
+  },
+
+  methods: {
+    onPreviewHandle(){
+      var urls = []
+      var code_url = this.wifi.code_url
+      if (code_url){
+        urls.push(code_url)
+      }
+      if (urls.length){
+        wx.previewImage({
+          urls// 需要预览的图片http链接列表
+        })
       }
     }
   },
