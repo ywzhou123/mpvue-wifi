@@ -67,16 +67,18 @@ export default {
     blank
   },
   async onPullDownRefresh() {
-    // to doing..
-    console.log('lalala')
-    wx.showLoading({
-      title: 'Loading',
-    })
-    this.getWifiList()
-    this.getConnectList()
-    setTimeout(()=>{
-      wx.hideLoading()
-    }, 2000)
+    console.log('flush',this.openid)
+    if (this.openid){
+      console.log('lalala')
+      wx.showLoading({
+        title: 'Loading',
+      })
+      this.getWifiList()
+      this.getConnectList()
+      setTimeout(()=>{
+        wx.hideLoading()
+      }, 2000)
+    }
     // 停止下拉刷新
     wx.stopPullDownRefresh();
   },
@@ -154,6 +156,8 @@ export default {
           console.log('openid: ',res.result)
           var result = res.result
           that.openid=result.openid
+          that.getWifiList()
+          that.getConnectList()
         },
         fail(err){
           console.log('openid fail',err)
@@ -216,18 +220,28 @@ export default {
     //   })
     // },
   },
-  watch: {
-    openid: function (val, oldVal) {
-      if ( val !== oldVal){
-        console.log('watch openid')
-        this.getWifiList()
-        this.getConnectList()
-      }
-    }
-  },
   mounted() {
+    console.log('mounted', this)
     this.setClientHeight()
     this.authHandle()
+  },
+  created() {
+    // console.log('page index created', this)
+  },
+  onLoad() {
+    // console.log('page index onLoad', this)
+  },
+  onReady () {
+    // console.log('page index onReady', this)
+  },
+  onShow() {
+    // console.log('onShow', this)
+  },
+  onUnload() {
+    // console.log('onUnload', this)
+  },
+  onHide() {
+    // console.log('onHide', this)
   },
 }
 </script>

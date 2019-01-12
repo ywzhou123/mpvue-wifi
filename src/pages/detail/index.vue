@@ -7,6 +7,7 @@
     <button class="weui-btn" type="primary" @click="continueHandle">继续创建</button>
     <button class="weui-btn" type="primary" @click="updateHandle">修改</button>
     <button class="weui-btn" type="primary" @click="deleteHandle">删除</button>
+    <button class="weui-btn" type="primary" @click="homeHandle">返回首页</button>
   </div>
 </template>
 
@@ -33,6 +34,11 @@ export default {
   computed: {
   },
   methods: {
+    homeHandle(){
+      wx.navigateTo({
+        url: '/pages/index/main'
+      })
+    },
     continueHandle(){
       wx.navigateTo({
         url: '/pages/wifilist/main'
@@ -55,16 +61,19 @@ export default {
       })
     },
     deleteWifi(){
+      var that = this
       wx.showLoading({
         title: '删除中',
       })
-      this.$db.collection('wifi_list').doc(this.wifi.id).remove({
+      this.$db.collection('wifi_list').doc(that.wifi._id).remove({
         success(){
+          that.removeConnectDoc(that.wifi._id)
           wx.navigateTo({
             url: '/pages/index/main'
           })
         },
         fail(err){
+          console.error('del',err)
           wx.showToast({
             icon: 'none',
             title: '删除失败',
@@ -72,6 +81,20 @@ export default {
         },
         complete(){
           wx.hideLoading()
+        }
+      })
+    },
+    removeConnectDoc(wifi_id){
+      wx.cloud.callFunction({
+        name: 'removeConnect',
+        data: {
+          wifi_id,
+        },
+        success(res) {
+          console.log('remove con',res)
+        },
+        fail(err){
+          console.error(err)
         }
       })
     },
