@@ -40,6 +40,7 @@
 import wifi from './wifi'
 import connect from './connect'
 import blank from '../../components/blank'
+import { setTimeout } from 'timers';
 
 export default {
   data () {
@@ -73,6 +74,9 @@ export default {
     })
     this.getWifiList()
     this.getConnectList()
+    setTimeout(()=>{
+      wx.hideLoading()
+    }, 2000)
     // 停止下拉刷新
     wx.stopPullDownRefresh();
   },

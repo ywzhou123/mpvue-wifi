@@ -20,7 +20,7 @@ export default {
   data(){
     return {
       wifi: {
-        id: '',
+        _id: '',
         ssid: '',
         bssid: '',
         pass: '',
@@ -39,8 +39,8 @@ export default {
       })
     },
     updateHandle(){
-      wx.navigateBack({
-        delta: 1
+      wx.navigateTo({
+        url: `/pages/create/main?wifi_id=${this.wifi._id}`
       })
     },
     deleteHandle(){
@@ -94,7 +94,6 @@ export default {
     var query = this.$root.$mp.query
     var wifi_id = query.wifi_id
     if (query.wifi_id) {
-      this.wifi.id=wifi_id
       this.getWifiDetail(wifi_id)
     }else{
       wx.showToast({

@@ -22,6 +22,7 @@ import { isIncludeChinese } from '../../utils'
 export default {
   data() {
     return {
+      _id: '',
       ssid: '',
       bssid: '',
       pass: '',
@@ -55,10 +56,17 @@ export default {
         success(res) {
           if (res.confirm) {
             console.log('confirm')
-            that.createWifi()
+            that.onConfirm()
           }
         }
       })
+    },
+    onConfirm(){
+      if(this._id){
+        this.updateWifi()
+      }else{
+        this.createWifi()
+      }
     },
     createWifi () {
       var ssid = this.ssid
@@ -96,7 +104,35 @@ export default {
         }
       })
     },
-
+    updateWifi(){
+      var pass = this.pass.trim()
+      var title = this.title.trim()
+      var remark = this.remark.trim()
+      console.log('生成中')
+      var that = this
+      wx.showLoading({
+        title: '更新中',
+      })
+      that.$db.collection('wifi_list').doc(that._id).update({
+        data: {
+          pass,
+          title,
+          remark,
+        },
+        success (res) {
+          wx.navigateTo({
+            url: `/pages/detail/main?wifi_id=${that._id}`
+          })
+        },
+        fail (err) {
+          wx.showToast({
+            icon: 'none',
+            title: '更新记录失败'
+          })
+          wx.hideLoading()
+        }
+      })
+    },
     getCodeUrl(wifi_id){
       var that = this
       wx.cloud.callFunction({
@@ -113,12 +149,17 @@ export default {
               data: {
                 code_url: result.data
               },
-              success: console.log,
-              fail: console.error,
-              complete(){// 跳转详情页
+              success(){
                 wx.navigateTo({
                   url: `/pages/detail/main?wifi_id=${wifi_id}`
                 })
+              },
+              fail (err) {
+                wx.showToast({
+                  icon: 'none',
+                  title: '生成小程序码失败'
+                })
+                wx.hideLoading()
               }
             })
           }
@@ -135,27 +176,44 @@ export default {
           wx.hideLoading()
         }
       })
+    },
+    getWifiDetail(wifi_id){
+      const that = this;
+      this.$db.collection('wifi_list').doc(wifi_id).get({
+        success(res) {
+          console.log('wifi detail',res)
+          var wifi = res.data
+          that._id = wifi._id
+          that.ssid = wifi.ssid
+          that.bssid = wifi.bssid
+          that.pass = wifi.pass
+          that.title = wifi.title
+          that.remark = wifi.remark
+        },
+        fail(){
+          wx.showToast({
+            icon: 'none',
+            title: '获取详情失败',
+          })
+        }
+      })
     }
   },
   mounted() {
     var query = this.$root.$mp.query
     var ssid = query.ssid
-    if (ssid) {
-      if (ssid !== this.ssid){
-        this.pass=''
-        this.title=''
-        this.remark=''
-      }
-      this.ssid=ssid
-    }
     var bssid = query.bssid
-    if (bssid) {
-      if (ssid !== this.ssid){
-        this.pass=''
-        this.title=''
-        this.remark=''
-      }
-      this.bssid=bssid
+    var wifi_id = query.wifi_id
+    console.log('id',wifi_id)
+    if (wifi_id){
+      this.getWifiDetail(wifi_id)
+    } else if (ssid && bssid){
+      this._id = ''
+      this.pass=''
+      this.title=''
+      this.remark=''
+      this.ssid = ssid
+      this.bssid = bssid
     }
   }
 }
