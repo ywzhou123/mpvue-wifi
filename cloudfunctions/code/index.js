@@ -4,9 +4,24 @@ const request = require('request')
 const fs = require('fs')
 const path = require('path')
 const qiniu = require('qiniu')
-cloud.init()
-let baseDir = '/tmp'
 
+cloud.init()
+
+const baseDir = '/tmp'
+const db = cloud.database()
+
+const update = async (fileName, wifi_id) => {
+  try {
+    const code_url = `https://pub.image.youshiker.com/${fileName}`
+    return await db.collection('wifi_list').doc(wifi_id).update({
+      data: {
+        code_url
+      }
+    })
+  } catch (e) {
+    console.error('update err: ',e)
+  }
+}
 const upload = async (fileName) => {
   try{
     const filePath = path.join(baseDir, fileName)
@@ -23,7 +38,7 @@ const upload = async (fileName) => {
     return err
   }
 }
-const uploadQiniu = async (fileName)=>{
+const uploadQiniu = async (fileName, wifi_id)=>{
   try {
     var accessKey = 'JrMc8zDDSlBFEpp4VpZOBsHOtjjyHUlNT6jEcxzT';
     var secretKey = 'rOgsEapfQ5B4Yw-Pe9KMbOvo2EItWxzDtGGWi1xc';
@@ -46,24 +61,32 @@ const uploadQiniu = async (fileName)=>{
     var putExtra = new qiniu.form_up.PutExtra();
     var key = fileName;
     var localFile = path.join(baseDir, fileName)
-    // 文件上传
-    await formUploader.putFile(uploadToken, key, localFile, putExtra, async function (respErr,
-      respBody, respInfo) {
-      if (respErr) {
-        throw respErr;
+    return await new Promise((resolve, reject) => {
+      // 文件上传
+      var result = {
+        fileName,
+        wifi_id,
+        statusCode: -1,
+        message: 'noput'
       }
-      if (respInfo.statusCode == 200) {
-        console.log(respBody);
-        // 上传成功后修改wifi的file_url
-        // await function (){
-        // }
-      } else {
-        console.log(respInfo.statusCode);
-        console.log(respBody);
-      }
-    });
+      var that = this
+      formUploader.putFile(uploadToken, key, localFile, putExtra,
+        function(respErr, respBody, respInfo){
+          if (respErr) {
+            reject(respErr);
+          }
+          if (respInfo.statusCode == 200) {
+            console.log('respBody', respBody);
+            that.result.body = respBody
+            that.result.statusCode = 200
+            that.result.message = 'putFile:ok'
+          }
+        })
+      resolve(result)
+    })
   } catch(err){
     console.log('qiniu: ',err)
+    return err
   }
 }
 // 云函数入口函数
@@ -89,11 +112,11 @@ exports.main = async (event, context) => {
   let filePath = path.join(baseDir, fileName)
 
   var result = {
-    "err": "no data"
+    fileName,
+    wifi_id: event.scene
   }
   return new Promise((resolve, reject) => {
     try {
-
       var httpStream = request({
         url,
         method: "POST",
@@ -102,14 +125,12 @@ exports.main = async (event, context) => {
         },
         body: JSON.stringify(args)
       })
-
-
       let writeStream = fs.createWriteStream(filePath);
       httpStream.pipe(writeStream)
-      httpStream.on('response', (response) => {
-        // console.log('response headers is: ', response.headers);
-      });
-      let totalLength = 0;
+      // httpStream.on('response', (response) => {
+      //   console.log('response headers is: ', response.headers);
+      // });
+      // let totalLength = 0;
       // httpStream.on('data', (chunk) => {
       //   totalLength += chunk.length;
       //   console.log('recevied data size: ' + totalLength + '字节');
@@ -121,31 +142,54 @@ exports.main = async (event, context) => {
       // writeStream.on('finish', () => {
       //   console.log('finish: ');
       // });
-      writeStream.on('close', async function () {
-        try {
-          console.log('download finished: ');
-          await upload(fileName)
-          await uploadQiniu(fileName)
-          // fs.unlink(filePath, function(err){
-          //   console.log('unlink: ',err)
-          // })
-        } catch (error) {
-          reject(error)
-        }
+      // writeStream.on('finish',  () => { resolve(result); });
+      writeStream.on('close', ()=>{
+        console.log('download finished: ');
+        // await upload(fileName)
+        // const upres = await uploadQiniu(fileName, event.scene)
+        // console.log('upres: ',upres)
+        // result = upres
+        // fs.unlink(filePath, function(err){
+        //   console.log('unlink: ',err)
+        // })
+        resolve(result)
       });
-      resolve(fileName)
+      // resolve(writeStream)
     } catch (e) {
       reject(e)
     }
   })
-    // .then(res => {
-    //   console.log('dir: ', fs.readdirSync(event.dir))
-    //   console.log('unlink: ', res)
-    //   // if (res.fileName) {
-    //   //   const filePath = path.join(baseDir, fileName)
-    //   //   fs.unlink(filePath, console.log)
-    //   // }
-    //   return res
-    // })
-    .catch(error => console.log('error: ', error))
+  .then((res)=>{
+    console.log('then res: ',res)
+    if (res.fileName){
+      const filePath = path.join(baseDir, res.fileName)
+      const status = fs.statSync(filePath)
+      console.log('file status: ',status)
+    }
+    return res
+  })
+  .then(res=> {
+    console.log('updata res: ', res)
+    if (res.fileName && res.wifi_id){
+      return uploadQiniu(res.fileName, res.wifi_id)
+    }
+    return res
+  })
+  .then(res=>{
+    // 上传成功后修改wifi的file_url
+    console.log('update wifi res: ', res);
+    if (res.fileName && res.wifi_id) {
+      return update(res.fileName, res.wifi_id)
+    }
+    return res
+  })
+  .then(res => {
+    console.log('unlink res: ', res);
+    if (res.fileName) {
+      const filePath = path.join(baseDir, res.fileName)
+      fs.unlink(filePath, console.log)
+    }
+    return res
+  })
+  .catch(error => console.log('error: ', error))
 }

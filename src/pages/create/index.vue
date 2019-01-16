@@ -92,7 +92,7 @@ export default {
         success (res) {
           console.log('add',res)
           var wifi_id = res._id
-          that.getCodeUrl(wifi_id)
+          that.getCodeImage(wifi_id)
         },
         fail (err) {
           console.log('add fail')
@@ -133,6 +133,30 @@ export default {
         }
       })
     },
+    getCodeImage(wifi_id){
+      wx.cloud.callFunction({
+        name: 'code',
+        data: {
+          scene: wifi_id,
+        },
+        success(res) {
+          console.log('get code: ', res.result)
+          wx.navigateTo({
+            url: `/pages/detail/main?wifi_id=${wifi_id}`
+          })
+        },
+        fail(err){
+          console.error(err)
+          wx.showToast({
+            icon: 'none',
+            title: '生成小程序码失败'
+          })
+        },
+        complete () {
+          wx.hideLoading()
+        }
+      })
+    },
     getCodeUrl(wifi_id){
       var that = this
       wx.cloud.callFunction({
@@ -144,7 +168,7 @@ export default {
           var result = res.result
           console.log('url: ',result)
           if (result.status === 200){
-            that.datapic = result.data
+            // that.datapic = result.data
             that.$db.collection('wifi_list').doc(wifi_id).update({
               data: {
                 code_url: result.data

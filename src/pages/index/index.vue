@@ -67,7 +67,6 @@ export default {
     blank
   },
   async onPullDownRefresh() {
-    console.log('flush',this.openid)
     if (this.openid){
       console.log('lalala')
       wx.showLoading({
@@ -153,7 +152,6 @@ export default {
       wx.cloud.callFunction({
         name: 'login',
         success(res) {
-          console.log('openid: ',res.result)
           var result = res.result
           that.openid=result.openid
           that.getWifiList()
@@ -211,8 +209,7 @@ export default {
       wx.cloud.callFunction({
         name: 'code',
         data: {
-          scene: 'wifi_id',
-          dir: '/tmp'
+          scene: 'XD65R5T75u22PhRU',
         },
         success(res) {
           console.log(res.result)
@@ -297,39 +294,4 @@ export default {
   margin: 40rpx;
   border-radius: 50%;
 }
-/* .userinfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.userinfo-avatar {
-  width: 128rpx;
-  height: 128rpx;
-  margin: 20rpx;
-  border-radius: 50%;
-}
-
-.userinfo-nickname {
-  color: #aaa;
-}
-
-.usermotto {
-  margin-top: 150px;
-}
-
-.form-control {
-  display: block;
-  padding: 0 12px;
-  margin-bottom: 5px;
-  border: 1px solid #ccc;
-}
-
-.counter {
-  display: inline-block;
-  margin: 10px auto;
-  padding: 5px 10px;
-  color: blue;
-  border: 1px solid blue;
-} */
 </style>
