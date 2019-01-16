@@ -85,7 +85,7 @@ export default {
       ctx.setFontSize(12) //设置字体大小，默认10
       const ssidX=(ctx.width - ctx.measureText(ssid).width) / 2
       ctx.fillText(ssid, ssidX, 280)
-      ctx.drawImage('/static/image/wifi-4.png', ssidX-26, 280, 18, 18 );
+      ctx.drawImage('/static/image/wifi-green.png', ssidX-26, 266, 18, 18 );
       ctx.setFontSize(12) //设置字体大小，默认10
       ctx.setFillStyle('rgba(196, 164, 164, 0.603)')
       ctx.fillText(remark, (ctx.width - ctx.measureText(remark).width) / 2, 320)
@@ -243,7 +243,7 @@ export default {
 <style scoped>
 .canvas{
   background-color:white;
-  margin: 40rpx 0;
+  /* margin: 40rpx 0; */
   width: 225px;
   height: 350px;
 }
