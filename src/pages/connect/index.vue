@@ -60,7 +60,22 @@ export default {
             wx.showToast({
               icon: 'success',
               title: '连接成功',
+              duration: 5000
             })
+            // 创建一个连接记录
+            that.$db.collection('connect_list').add({
+              data: {
+                wifi_id: that.wifi._id,
+                time: Date(),
+              },
+              success (res) {
+                console.log('add connect:',res)
+              },
+              fail (err) {
+                console.log('add connect fail')
+              }
+            })
+            // 连接成功 计数+1
             that.$db.collection('wifi_list').doc(that.wifi._id).update({
               data: {
                 count: that.wifi.count+1
@@ -74,6 +89,7 @@ export default {
             wx.showToast({
               icon: 'none',
               title: '连接失败',
+              duration: 5000
             })
           },
           complete(){

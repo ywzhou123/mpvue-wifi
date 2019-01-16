@@ -206,43 +206,29 @@ export default {
         })
       }
     },
-    // uploadFileHandle(){
-    //   wx.cloud.uploadFile({
-    //     cloudPath: 'background.png', // 上传至云端的路径
-    //     filePath: '/static/image/background.png', // 小程序临时文件路径
-    //     success: res => {
-    //       // 返回文件 ID
-    //       console.log('文件 ID',res.fileID)
-    //     },
-    //     fail(err){
-    //       console.log(err)
-    //     }
-    //   })
-    // },
+    getCodeImage(){
+      wx.cloud.callFunction({
+        name: 'code',
+        data: {
+          scene: 'wifi_id',
+          dir: '/tmp'
+        },
+        success(res) {
+          console.log(res.result)
+        },
+        fail(err){
+          console.error(err)
+        }
+      })
+    }
   },
   mounted() {
-    console.log('mounted', this)
+    // this.getCodeImage()
+
+console.log('mounted', this)
     this.setClientHeight()
     this.authHandle()
-  },
-  created() {
-    // console.log('page index created', this)
-  },
-  onLoad() {
-    // console.log('page index onLoad', this)
-  },
-  onReady () {
-    // console.log('page index onReady', this)
-  },
-  onShow() {
-    // console.log('onShow', this)
-  },
-  onUnload() {
-    // console.log('onUnload', this)
-  },
-  onHide() {
-    // console.log('onHide', this)
-  },
+  }
 }
 </script>
 

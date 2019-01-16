@@ -4,12 +4,12 @@
     <img :src="wifi.code_url" alt="" class="img" @click="onPreviewHandle"/>
     <div class="desc">扫一扫，连接WiFi</div>
     <div class="wifi-info">
-      <icon type="success" size="20"/>
+      <img src="/static/image/wifi-4.png" alt="" class="wifi">
       <div class="ssid">{{wifi.ssid}}</div>
     </div>
     <div class="remark">{{wifi.remark}}</div>
     <div class="footer">
-      <icon type="info" size="10"/>
+      <img src="/static/image/logo.png" alt="" class="logo">
       <div class="footer-text">
         <div class="comp">畅享企业WiFi</div>
         <div class="by">Powered by ywzhou</div>
@@ -55,6 +55,14 @@ export default {
 <style scoped>
 .container{
   background-color: white;
+}
+.wifi{
+  width: 18px;
+  height: 18px;
+}
+.logo{
+  width: 10px;
+  height: 10px;
 }
 .title{
   font-size: 12px;

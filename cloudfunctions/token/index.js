@@ -14,8 +14,8 @@ exports.main = async (event, context) => {
   return new Promise((resolve, reject) => {
     try {
       request(urls, (err, resp, body) => {
-        if (err) return reject(err)
-        return resolve(body)
+        if (!err && resp.statusCode == 200) return resolve(body)
+        return reject(err)
       })
     } catch (err) {
       return reject(err)

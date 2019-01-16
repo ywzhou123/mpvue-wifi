@@ -1,5 +1,9 @@
 # mpvue-test
 
+> 第一个使用mpvue框架开发的微信小程序项目，
+
+> 畅享无限WiFi码，用于分享已知的wifi，让朋友扫小程序码直接连接
+
 > A Mpvue project
 
 ## Build Setup

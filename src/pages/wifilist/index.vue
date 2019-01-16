@@ -2,10 +2,10 @@
   <div class="container">
     <div class="wifilist">
       <div class="current">
-        <div v-if="startError">
+        <!-- <div v-if="startError">
           <span>{{startError}}</span>
-        </div>
-        <img src="../../../static/image/logo.png" alt="" class="logo">
+        </div> -->
+        <img src="/static/image/logo.png" alt="" class="logo">
         <span class="company">畅享无限</span>
         <div class="ssid">
           <span>{{ssid||'未连接Wifi'}}</span>
@@ -180,6 +180,10 @@ export default {
       var that = this;
       that.wifiListError = true ;
       that.wifiListErrorInfo = `当前系统版本(${that.platform}:${that.system})暂不支持`;
+      wx.showToast({
+        icon: 'none',
+        title: that.wifiListErrorInfo
+      })
     },
     clickHandle (e) {
       wx.navigateTo({

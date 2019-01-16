@@ -9,10 +9,10 @@
           <div class="ssid">{{wifi.SSID}}</div>
           </div>
           <div class="weui-flex__item item-secure">
-            <icon type="info" size="20" v-if="wifi.secure"/>
+            <img src="/static/image/lock.png" alt="" class="lock" v-if="wifi.secure">
           </div>
           <div class="weui-flex__item item-signalStrength">
-            <div class="signalStrength">{{signalStrengthLevel}}</div>
+            <img :src="signalStrengthLevel" alt="" class="signalStrength">
           </div>
         </div>
 
@@ -48,11 +48,10 @@ export default {
     },
     signalStrengthLevel () {
       var signalStrength = this.wifi.signalStrength
-      if (signalStrength > 80) return '满格'
-      if (signalStrength > 60) return '4格'
-      if (signalStrength > 50) return '3格'
-      if (signalStrength > 20) return '2格'
-      return '1格'
+      if (signalStrength > 75) return '/static/image/wifi-4.png'
+      if (signalStrength > 50) return '/static/image/wifi-3.png'
+      if (signalStrength > 25) return '/static/image/wifi-2.png'
+      return '/static/image/wifi-1.png'
     }
   },
 }
@@ -85,9 +84,11 @@ export default {
 }
 .item-signalStrength{
   margin-right: 10px;
+  margin-left: 10px;
 }
-.signalStrength{
-  width: 40px;
-  text-align: right;
+
+.lock, .signalStrength{
+  width: 40rpx;
+  height: 40rpx;
 }
 </style>

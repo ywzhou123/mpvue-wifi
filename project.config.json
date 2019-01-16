@@ -1,7 +1,7 @@
 {
 	"description": "项目配置文件。",
 	"setting": {
-		"urlCheck": true,
+		"urlCheck": false,
 		"es6": false,
 		"postcss": true,
 		"minified": true,
@@ -9,7 +9,7 @@
 	},
 	"miniprogramRoot": "dist/wx/",
 	"compileType": "miniprogram",
-	"cloudfunctionRoot": "src/cloudfunctions/",
+	"cloudfunctionRoot": "cloudfunctions/",
 	"appid": "wxd8a26b2c1042fa2a",
 	"projectname": "mpvue-test",
 	"libVersion": "2.4.3",

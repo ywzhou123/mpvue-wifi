@@ -1,13 +1,15 @@
 <template>
   <div class="container">
     <div class="codepic-cont">
-      <codepic :wifi="wifi"></codepic>
+      <!-- <codepic :wifi="wifi"></codepic> -->
+      <button open-type="share" class="sharebtn"><img src="/static/image/share.png" alt="" class="share" @click="shareHandle"></button>
+      <img src="/static/image/edit.png" alt="" class="update" @click="updateHandle">
+      <img src="/static/image/delete.png" alt="" class="delete"  @click="deleteHandle">
     </div>
-    <div class="share">点击查看大图，分享给朋友</div>
-    <button class="weui-btn" type="primary" @click="continueHandle">继续创建</button>
-    <button class="weui-btn" type="primary" @click="updateHandle">修改</button>
-    <button class="weui-btn" type="primary" @click="deleteHandle">删除</button>
-    <button class="weui-btn" type="primary" @click="homeHandle">返回首页</button>
+    <canvas class="canvas" canvas-id="canvas"></canvas>
+    <span class="desc">点击查看大图，分享给朋友</span>
+    <span class="continue" @click="continueHandle">继续创建</span>
+    <span class="back" @click="homeHandle">返回首页</span>
   </div>
 </template>
 
@@ -18,8 +20,20 @@ export default {
   components: {
     codepic
   },
+  onShareAppMessage(res) {
+    if (res.from === 'img') {
+      // 来自页面内转发按钮
+      console.log(res.target)
+    }
+    return {
+      title: '自定义转发标题',
+      path: '/page/index/main'
+    }
+  },
   data(){
     return {
+      windowWidth: 0,
+      windowHeight: 0,
       wifi: {
         _id: '',
         ssid: '',
@@ -34,6 +48,94 @@ export default {
   computed: {
   },
   methods: {
+    //url图片下载到本地
+    downloadImage(){
+      const that = this
+      wx.downloadFile({
+        url: that.wifi.code_url,
+        success: function (sres) {
+          console.log(sres.tempFilePath);
+          //确保图片已下载到本地，再开始进行canvas操作
+          if (sres.tempFilePath){
+            that.createNewImage(sres.tempFilePath);
+          }
+        }, fail: function (fres) {
+          console.log('down',fres)
+        }
+      })
+    },
+    /* 处理图片/文字绘制 */
+    createNewImage: function (urlPath){
+      var that = this;
+      var ctx = wx.createCanvasContext('canvas', this)
+      const {title,ssid,remark} = that.wifi
+      // 把模板图片绘制到canvas上
+      // CanvasContext.fillStyle()
+      // ctx.setFillStyle('witer')
+      // ctx.fillRect(0, 0, 225, 300)
+      console.log('ctx',ctx)
+      ctx.width = 225
+      ctx.drawImage(urlPath, 125/2, 160/2, 200/2, 200/2 ); // px
+      ctx.setFontSize(12) //设置字体大小，默认10
+      // ctx.setFillStyle('#5F6FEE')//文字颜色：默认黑色
+      ctx.fillText(title, (ctx.width - ctx.measureText(title).width) / 2, 40)
+      ctx.setFontSize(20) //设置字体大小，默认10
+      const desc = '扫一扫，连接WiFi'
+      ctx.fillText(desc, (ctx.width - ctx.measureText(desc).width) / 2, 240)
+      ctx.setFontSize(12) //设置字体大小，默认10
+      const ssidX=(ctx.width - ctx.measureText(ssid).width) / 2
+      ctx.fillText(ssid, ssidX, 280)
+      ctx.drawImage('/static/image/wifi-4.png', ssidX-26, 280, 18, 18 );
+      ctx.setFontSize(12) //设置字体大小，默认10
+      ctx.setFillStyle('rgba(196, 164, 164, 0.603)')
+      ctx.fillText(remark, (ctx.width - ctx.measureText(remark).width) / 2, 320)
+
+      ctx.setFillStyle('white')
+      ctx.setFontSize(6) //设置字体大小，默认10
+      const company = '畅享无限WiFi码'
+      const companyX=(ctx.width - ctx.measureText(company).width) / 2
+      ctx.fillText(company, companyX, 340)
+      ctx.drawImage('/static/image/logo.png',  companyX-12, 340,10, 10 );
+      ctx.setFontSize(3) //设置字体大小，默认10
+      const by = 'Powered by ywzhou'
+      ctx.fillText(by, (ctx.width - ctx.measureText(by).width) / 2, 345)
+
+      ctx.setFillStyle('green')
+      ctx.fillRect(0, 340, 225, 350)
+      ctx.draw();//绘制图片
+
+    },
+    //把生成好的图片保存到本地
+    savePic () {
+      let that = this;
+      let offset_left = (this.windowWidth - 303) / 2
+      console.log('savePic')
+      wx.canvasToTempFilePath({
+        x: offset_left,
+        y: 0,
+        width: 303,
+        height: 398,
+        canvasId: 'canvas',
+        success: function (res) {
+          console.log(res.tempFilePath)
+          //previewImage，直接预览该图片
+        },
+        fail (e) {
+          console.log(e)
+        }
+      }, this)
+    },
+    shareHandle(){
+      wx.showShareMenu({
+        withShareTicket: true,
+        success(res){
+          console.log(res)
+        },
+        fail(err){
+          console.log(err)
+        }
+      })
+    },
     homeHandle(){
       wx.navigateTo({
         url: '/pages/index/main'
@@ -103,6 +205,7 @@ export default {
       this.$db.collection('wifi_list').doc(wifi_id).get({
         success(res) {
           that.wifi = Object.assign({}, that.wifi, res.data)
+          that.downloadImage()
         },
         fail(){
           wx.showToast({
@@ -124,18 +227,68 @@ export default {
         title: '请求参数错误',
       })
     }
+
+    // 获取手机宽高
+    const that = this
+    wx.getSystemInfo({
+      success: (res) => {
+          that.windowWidth = res.windowWidth
+          that.windowHeight = res.windowHeight
+      }
+    })
   },
 }
 </script>
 
 <style scoped>
+.canvas{
+  background-color:white;
+  margin: 40rpx 0;
+  width: 225px;
+  height: 350px;
+}
 .codepic-cont, .weui-btn{
-  margin: 10px 0;
+  margin: 40rpx 0;
   width: 60%;
 }
-.share{
-  text-align: center;
+.share, .update, .delete{
+  background-color:#aaa;
+  width: 40rpx;
+  height: 40rpx;
+  padding: 10rpx;
+}
+.sharebtn{
+  background-color:transparent;
+  position:absolute;
+  right:60rpx;
+  top:40rpx;
+  padding:0;
+  border-radius: 0;
+  box-sizing: unset
+}
+button::after{
+  border:none;
+}
+
+.update{
+  position:absolute;
+  right:60rpx;
+  top:120rpx;
+}
+.delete{
+  position:absolute;
+  right:60rpx;
+  top:200rpx;
+}
+.desc{
   font-size: 12px;
   color: rgba(196, 164, 164, 0.603);
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+.continue,.back{
+  font-size: 14px;
+  color: green;
+  margin-bottom: 40rpx;
 }
 </style>
