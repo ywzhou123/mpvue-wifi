@@ -6,7 +6,7 @@
       <img src="/static/image/edit.png" alt="" class="update" @click="updateHandle">
       <img src="/static/image/delete.png" alt="" class="delete"  @click="deleteHandle">
     </div>
-    <canvas class="canvas" canvas-id="canvas"></canvas>
+    <canvas class="canvas" canvas-id="canvas" @click="onPreviewImage"></canvas>
     <span class="desc">点击查看大图，分享给朋友</span>
     <span class="continue" @click="continueHandle">继续创建</span>
     <span class="back" @click="homeHandle">返回首页</span>
@@ -34,6 +34,7 @@ export default {
     return {
       windowWidth: 0,
       windowHeight: 0,
+      urls:[],
       wifi: {
         _id: '',
         ssid: '',
@@ -66,6 +67,9 @@ export default {
     },
     /* 处理图片/文字绘制 */
     createNewImage: function (urlPath){
+      wx.showLoading({
+        title: '生成中'
+      })
       var that = this;
       var ctx = wx.createCanvasContext('canvas', this)
       const {title,ssid,remark} = that.wifi
@@ -75,55 +79,78 @@ export default {
       // ctx.fillRect(0, 0, 225, 300)
       console.log('ctx',ctx)
       ctx.width = 225
+      //白色背景
+      ctx.setFillStyle('white')
+      ctx.fillRect(0, 0, 225, 350)
+      //小程序码图
       ctx.drawImage(urlPath, 125/2, 160/2, 200/2, 200/2 ); // px
       ctx.setFontSize(12) //设置字体大小，默认10
+      ctx.setFillStyle('black')
       // ctx.setFillStyle('#5F6FEE')//文字颜色：默认黑色
       ctx.fillText(title, (ctx.width - ctx.measureText(title).width) / 2, 40)
-      ctx.setFontSize(20) //设置字体大小，默认10
+      //说明文字
       const desc = '扫一扫，连接WiFi'
+      ctx.setFontSize(20) //设置字体大小，默认10
+      ctx.setFillStyle('black')
       ctx.fillText(desc, (ctx.width - ctx.measureText(desc).width) / 2, 240)
+      //ssid文字
       ctx.setFontSize(12) //设置字体大小，默认10
+      ctx.setFillStyle('black')
       const ssidX=(ctx.width - ctx.measureText(ssid).width) / 2
       ctx.fillText(ssid, ssidX, 280)
       ctx.drawImage('/static/image/wifi-green.png', ssidX-26, 266, 18, 18 );
+      //备注文字
       ctx.setFontSize(12) //设置字体大小，默认10
       ctx.setFillStyle('rgba(196, 164, 164, 0.603)')
       ctx.fillText(remark, (ctx.width - ctx.measureText(remark).width) / 2, 320)
-
+      //底部背景
+      ctx.setFillStyle('green')
+      ctx.fillRect(0, 340, 225, 350)
+      //底部文字
       ctx.setFillStyle('white')
+      // ctx.font = "small-caps bold 35px Arial";//设置用户文本填充颜色
       ctx.setFontSize(6) //设置字体大小，默认10
       const company = '畅享无限WiFi码'
       const companyX=(ctx.width - ctx.measureText(company).width) / 2
-      ctx.fillText(company, companyX, 340)
+      ctx.fillText(company, companyX, 345)
       ctx.drawImage('/static/image/logo.png',  companyX-12, 340,10, 10 );
       ctx.setFontSize(3) //设置字体大小，默认10
       const by = 'Powered by ywzhou'
-      ctx.fillText(by, (ctx.width - ctx.measureText(by).width) / 2, 345)
+      ctx.fillText(by, (ctx.width - ctx.measureText(by).width) / 2, 348)
 
-      ctx.setFillStyle('green')
-      ctx.fillRect(0, 340, 225, 350)
       ctx.draw();//绘制图片
-
+      that.savePic()
     },
     //把生成好的图片保存到本地
     savePic () {
       let that = this;
       let offset_left = (this.windowWidth - 303) / 2
       console.log('savePic')
-      wx.canvasToTempFilePath({
-        x: offset_left,
-        y: 0,
-        width: 303,
-        height: 398,
-        canvasId: 'canvas',
-        success: function (res) {
-          console.log(res.tempFilePath)
-          //previewImage，直接预览该图片
-        },
-        fail (e) {
-          console.log(e)
-        }
-      }, this)
+      setTimeout(() => {
+        wx.canvasToTempFilePath({
+          x: 0,
+          y: 0,
+          width: 225,
+          height: 350,
+          canvasId: 'canvas',
+          success: function (res) {
+            console.log(res.tempFilePath)
+            //previewImage，直接预览该图片
+            that.urls=[res.tempFilePath]
+          },
+          fail (e) {
+            console.log(e)
+          },
+          complete(){
+            wx.hideLoading()
+          }
+        }, this)
+      }, 2000);
+    },
+    onPreviewImage(){
+      wx.previewImage({
+        urls: this.urls// 需要预览的图片http链接列表
+      })
     },
     shareHandle(){
       wx.showShareMenu({
