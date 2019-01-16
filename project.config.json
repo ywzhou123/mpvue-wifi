@@ -12,7 +12,7 @@
 	"cloudfunctionRoot": "cloudfunctions/",
 	"appid": "wxd8a26b2c1042fa2a",
 	"projectname": "mpvue-test",
-	"libVersion": "2.4.3",
+	"libVersion": "2.5.0",
 	"condition": {
 		"search": {
 			"current": -1,
@@ -22,13 +22,53 @@
 			"current": -1,
 			"list": []
 		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
 		"game": {
 			"currentL": -1,
 			"list": []
 		},
 		"miniprogram": {
-			"current": -1,
-			"list": []
+			"current": 3,
+			"list": [
+				{
+					"id": 0,
+					"name": "share",
+					"pathName": "pages/connect/main",
+					"query": "wifi_id=XD65R5T75u22PhRU",
+					"scene": "1007"
+				},
+				{
+					"id": -1,
+					"name": "sharegroup",
+					"pathName": "pages/connect/main",
+					"query": "wifi_id=XD65R5T75u22PhRU",
+					"scene": "1008"
+				},
+				{
+					"id": 2,
+					"name": "share app",
+					"pathName": "pages/detail/main",
+					"query": "wifi_id=XD65R5T75u22PhRU",
+					"scene": "1036",
+					"referrerInfo": {
+						"appId": "wxd8a26b2c1042fa2a"
+					}
+				},
+				{
+					"id": -1,
+					"name": "connect",
+					"pathName": "pages/connect/main",
+					"query": "wifi_id=XDmCGZT75u22KIyq",
+					"scene": "1037",
+					"referrerInfo": {
+						"appId": "wxd8a26b2c1042fa2a",
+						"extraData": "{}"
+					}
+				}
+			]
 		}
 	}
 }

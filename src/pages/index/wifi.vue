@@ -8,7 +8,7 @@
             <div class="ssid">
               <div class="ssid-value">{{wifi.ssid}}</div>
             </div>
-            <div class="count">已连接{{wifi.count || 0}}次</div>
+            <div class="count">已连接{{count}}次</div>
         </div>
         <div class="weui-flex__item item-right">
           <div class="right">></div>
@@ -19,11 +19,17 @@
 
 <script>
 export default {
+  data(){
+    return {
+      count: 0
+    }
+  },
   props: {
     wifi: {
       type: Object,
       require: true,
       default: {
+        _id: '',
         ssid: '',
         pass: '',
         title: '',
@@ -31,7 +37,28 @@ export default {
         count: 0
       }
     }
-  }
+  },
+  methods: {
+    getCount(){
+      const that = this
+      that.$db.collection('connect_list').where({
+        wifi_id: that.wifi._id
+      }).get({
+        success(res) {
+          if (res.data.length){
+            let count = 0
+            res.data.forEach(c => {
+              count += c.count?c.count:0
+            });
+            that.count = count
+          }
+        }
+      })
+    }
+  },
+  mounted() {
+    this.getCount()
+  },
 }
 </script>
 

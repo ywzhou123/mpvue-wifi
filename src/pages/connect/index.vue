@@ -1,10 +1,10 @@
 <template>
-  <div class="container"  :style="{height: height}" >
+  <div class="container"  :style="{height: height, backgroundImage:backgroundImage}" >
     <div class="header">
       <span>欢迎使用畅享无限WiFi</span>
     </div>
     <div class="body">
-      <img src="../../../static/image/logo.png" alt="" class="logo">
+      <img src="/static/image/logo.png" alt="" class="logo">
       <span class="find">发现WiFi</span>
       <span class="ssid">{{wifi.ssid}}</span>
       <span class="title">{{wifi.title}}</span>
@@ -16,12 +16,13 @@
 </template>
 
 <script>
-import Img from '../../../static/image/background.png'
+// import Img from '../../../static/image/background.png'
 
 export default {
   data(){
     return {
-      img: Img,
+      openid: '',
+      img: '/static/image/background.png',
       height:'',
       disabled: true,
       connectBtnText: '连接WiFi',
@@ -63,47 +64,10 @@ export default {
               title: '连接成功',
               duration: 5000
             })
-            // 创建一个连接记录,如果存在就更新time
-            that.$db.collection('connect_list').where({
-              wifi_id: that.wifi._id
-            }).update({
-              data: {
-                time: Date()
-              },
-              success(res){
-                console.log(res)
-                wx.navigateTo({
-                  url: '/pages/index/main'
-                })
-              },
-              fail(err){
-                that.$db.collection('connect_list').add({
-                  data: {
-                    wifi_id: that.wifi._id,
-                    time: Date(),
-                  },
-                  success (res) {
-                    console.log('add connect:',res)
-                  },
-                  fail (err) {
-                    console.log('add connect fail')
-                  }
-                })
-              }
-            })
-
-            // 连接成功 计数+1
-            that.$db.collection('wifi_list').doc(that.wifi._id).update({
-              data: {
-                count: that.$db.command.inc(1)
-              },
-              success: console.log,
-              fail: console.error,
-            })
+            that.createConnect()
           },
           fail(err){
             console.log('connectWifi', err)
-
             that.connectBtnText='重新连接'
             wx.showToast({
               icon: 'none',
@@ -121,6 +85,56 @@ export default {
           title: 'WiFi不存在',
         })
       }
+    },
+    createConnect(){
+      const that = this
+      if (!that.openid){
+        console.log('no openid')
+        return
+      }
+      // 创建一个连接记录,如果存在就更新time
+      const connect_list = that.$db.collection('connect_list').where({
+        wifi_id: that.wifi._id,
+        _openid: that.openid
+      }).orderBy('time','desc').get({
+        success(res){
+          console.log('connect_list: ',res)
+          if (res.data.length){
+            // 已有此连接记录，更新连接次数及时间，多余的删除
+            const array = res.data
+            for (let index = 0, length = array.length; index < length; index++) {
+              const element = array[index];
+              if (index === 0){
+                that.$db.collection('connect_list').doc(element._id).update({
+                  data:{
+                    count: that.$db.command.inc(1)
+                  }
+                })
+              }else{
+                that.$db.collection('connect_list').doc(element._id).remove()
+              }
+            }
+          }else{
+            // 没有连接记录，新建
+            that.$db.collection('connect_list').add({
+              data: {
+                wifi_id: that.wifi._id,
+                time: Date(),
+                count: 1,
+              },
+              success (res) {
+                console.log('add connect:',res)
+              },
+              fail (err) {
+                console.log('add connect fail')
+              }
+            })
+          }
+        },
+        fail(err){
+          console.log('con list f: ', err)
+        }
+      })
     },
     getWifiDetail(wifi_id){
       const that = this;
@@ -163,11 +177,25 @@ export default {
           console.log('heith: ',height)
         }
       })
-    }
+    },
+    getOpenId(){
+      var that = this
+      wx.cloud.callFunction({
+        name: 'login',
+        success(res) {
+          that.openid=res.result.openid
+        },
+        fail(err){
+          console.log('openid fail',err)
+        }
+      })
+    },
   },
   mounted() {
     // 设置高度
     this.setClientHeight()
+    this.getOpenId()
+
     var wifi_id
     var query = this.$root.$mp.query
     console.log('query: ', query)
@@ -194,7 +222,7 @@ export default {
 .container{
   justify-content: start;
   background-color: green;
-  background-image: url('/static/image/background.png')
+  /* background-image: url('/static/image/background.png') */
 }
 .header{
   font-size:24px;

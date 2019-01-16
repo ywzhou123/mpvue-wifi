@@ -20,14 +20,14 @@ export default {
   components: {
     codepic
   },
-  onShareAppMessage(res) {
-    if (res.from === 'img') {
-      // 来自页面内转发按钮
-      console.log(res.target)
-    }
-    return {
-      title: '自定义转发标题',
-      path: '/page/index/main'
+  onShareAppMessage(){
+    return{
+      title: `邀请你连接${this.wifi.ssid}`,
+      path: `/pages/connect/main?wifi_id=${this.wifi._id}`,
+      // imageUrl:'https://ceshi.guirenpu.com/images/banner.png',
+      success(res){
+        console.log("转发成功"+res);
+      }
     }
   },
   data(){
@@ -152,17 +152,6 @@ export default {
         urls: this.urls// 需要预览的图片http链接列表
       })
     },
-    shareHandle(){
-      wx.showShareMenu({
-        withShareTicket: true,
-        success(res){
-          console.log(res)
-        },
-        fail(err){
-          console.log(err)
-        }
-      })
-    },
     homeHandle(){
       wx.navigateTo({
         url: '/pages/index/main'
@@ -262,6 +251,9 @@ export default {
           that.windowWidth = res.windowWidth
           that.windowHeight = res.windowHeight
       }
+    })
+    wx.showShareMenu({
+      withShareTicket: true
     })
   },
 }
