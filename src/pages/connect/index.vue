@@ -9,7 +9,7 @@
       <span class="ssid">{{wifi.ssid}}</span>
       <span class="title">{{wifi.title}}</span>
       <span class="remark">{{wifi.remark}}</span>
-      <button class="weui-btn" type="primary" :disabled="disabled" @click="clickHandle">连接WiFi</button>
+      <button class="weui-btn" type="primary" :disabled="disabled" @click="clickHandle">{{connectBtnText}}</button>
     </div>
     <a href="/pages/index/main" class="footer">如何创建WiFi码</a>
   </div>
@@ -24,6 +24,7 @@ export default {
       img: Img,
       height:'',
       disabled: true,
+      connectBtnText: '连接WiFi',
       wifi: {
         _id: '',
         ssid: '',
@@ -62,23 +63,39 @@ export default {
               title: '连接成功',
               duration: 5000
             })
-            // 创建一个连接记录
-            that.$db.collection('connect_list').add({
+            // 创建一个连接记录,如果存在就更新time
+            that.$db.collection('connect_list').where({
+              wifi_id: that.wifi._id
+            }).update({
               data: {
-                wifi_id: that.wifi._id,
-                time: Date(),
+                time: Date()
               },
-              success (res) {
-                console.log('add connect:',res)
+              success(res){
+                console.log(res)
+                wx.navigateTo({
+                  url: '/pages/index/main'
+                })
               },
-              fail (err) {
-                console.log('add connect fail')
+              fail(err){
+                that.$db.collection('connect_list').add({
+                  data: {
+                    wifi_id: that.wifi._id,
+                    time: Date(),
+                  },
+                  success (res) {
+                    console.log('add connect:',res)
+                  },
+                  fail (err) {
+                    console.log('add connect fail')
+                  }
+                })
               }
             })
+
             // 连接成功 计数+1
             that.$db.collection('wifi_list').doc(that.wifi._id).update({
               data: {
-                count: that.wifi.count+1
+                count: that.$db.command.inc(1)
               },
               success: console.log,
               fail: console.error,
@@ -86,6 +103,8 @@ export default {
           },
           fail(err){
             console.log('connectWifi', err)
+
+            that.connectBtnText='重新连接'
             wx.showToast({
               icon: 'none',
               title: '连接失败',

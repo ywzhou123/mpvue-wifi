@@ -109,14 +109,14 @@ export default {
       //底部文字
       ctx.setFillStyle('white')
       // ctx.font = "small-caps bold 35px Arial";//设置用户文本填充颜色
-      ctx.setFontSize(6) //设置字体大小，默认10
+      ctx.setFontSize(4) //设置字体大小，默认10
       const company = '畅享无限WiFi码'
       const companyX=(ctx.width - ctx.measureText(company).width) / 2
       ctx.fillText(company, companyX, 345)
       ctx.drawImage('/static/image/logo.png',  companyX-12, 340,10, 10 );
       ctx.setFontSize(3) //设置字体大小，默认10
       const by = 'Powered by ywzhou'
-      ctx.fillText(by, (ctx.width - ctx.measureText(by).width) / 2, 348)
+      ctx.fillText(by, companyX, 348)
 
       ctx.draw();//绘制图片
       that.savePic()
@@ -275,7 +275,7 @@ export default {
   height: 350px;
 }
 .codepic-cont, .weui-btn{
-  margin: 40rpx 0;
+  margin-top: 40rpx;
   width: 60%;
 }
 .share, .update, .delete{
@@ -311,11 +311,14 @@ button::after{
   font-size: 12px;
   color: rgba(196, 164, 164, 0.603);
   text-align: center;
-  margin-bottom: 40rpx;
+  margin: 40rpx;
 }
 .continue,.back{
   font-size: 14px;
   color: green;
   margin-bottom: 40rpx;
+}
+.continue {
+  font-size: 18px;
 }
 </style>

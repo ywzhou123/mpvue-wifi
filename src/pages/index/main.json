@@ -1,4 +1,5 @@
 {
     "navigationBarTitleText": "畅享无限首页",
-    "enablePullDownRefresh": true
+    "enablePullDownRefresh": true,
+    "backgroundColor": "#eee"
 }

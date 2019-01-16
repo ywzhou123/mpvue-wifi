@@ -168,6 +168,7 @@ export default {
       console.log('bindGetUserInfo',e)
       this.userInfo = e.mp.detail.userInfo
       this.canIUse = true
+      this.getOpenId()
     },
     //跳转wifilist
     clickHandle (e) {
@@ -179,9 +180,9 @@ export default {
     //获取数据库 wifi_list
     getWifiList () {
       var that = this;
-      this.$db.collection('wifi_list').limit(10).where({
+      this.$db.collection('wifi_list').where({
         _openid: that.openid,
-      }).get()
+      }).limit(10).orderBy('create','desc').get()
         .then(res=>{
           this.wifiList = res.data
         })
@@ -190,9 +191,9 @@ export default {
     //获取数据库 connect_list
     getConnectList () {
       var that = this;
-      this.$db.collection('connect_list').limit(10).where({
+      this.$db.collection('connect_list').where({
         _openid: that.openid,
-      }).get()
+      }).limit(10).orderBy('time','desc').get()
         .then(res=>{
           this.connectList = res.data
         })
@@ -224,8 +225,7 @@ export default {
   },
   mounted() {
     // this.getCodeImage()
-
-console.log('mounted', this)
+    console.log('mounted', this)
     this.setClientHeight()
     this.authHandle()
   }
