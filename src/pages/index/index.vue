@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :style="{heightHeight:min_height}" >
+  <div class="container" :style="{minHeight:min_height}" >
     <div class="userinfo">
       <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
     </div>
@@ -15,17 +15,17 @@
     </div>
     <blank></blank>
     <div class="wifi-list">
-      <div v-for="(item, index) in wifiList" :key="index" @click="clickWifiHandle(item._id,$event)">
+      <div v-for="(item, index) in getWifiListSorted" :key="index" @click="clickWifiHandle(item._id,$event)">
         <wifi :wifi="item"></wifi>
         <blank></blank>
       </div>
     </div>
-    <div class="connect-head" v-if="connectList">
+    <div class="connect-head" v-if="getConnectListSorted.length">
       <div class="icon"></div>
       <div class="title">最近使用</div>
     </div>
     <div class="connect-list">
-      <div v-for="(item, index) in connectList" :key="index">
+      <div v-for="(item, index) in getConnectListSorted" :key="index">
         <connect :connect="item"></connect>
       </div>
     </div>
@@ -39,8 +39,9 @@
 <script>
 import wifi from './wifi'
 import connect from './connect'
-import blank from '../../components/blank'
+import blank from '@/components/blank'
 import { setTimeout } from 'timers';
+import { sortTime } from '@/utils'
 
 export default {
   data () {
@@ -65,6 +66,14 @@ export default {
     wifi,
     connect,
     blank
+  },
+  computed: {
+    getWifiListSorted(){
+      return this.wifiList.sort((a,b)=>sortTime(a.create, b.create, 'desc'))
+    },
+    getConnectListSorted(){
+      return this.connectList.sort((a,b)=>sortTime(a.time, b.time, 'desc'))
+    }
   },
   async onPullDownRefresh() {
     if (this.openid){
@@ -180,8 +189,9 @@ export default {
       var that = this;
       this.$db.collection('wifi_list').where({
         _openid: that.openid,
-      }).limit(10).orderBy('create','desc').get()
+      }).orderBy('create','desc').limit(10).get()
         .then(res=>{
+          // console.log('wifi_list: ', res.data.map(v=>v.create))
           this.wifiList = res.data
         })
         .catch(console.error)
@@ -191,8 +201,9 @@ export default {
       var that = this;
       this.$db.collection('connect_list').where({
         _openid: that.openid,
-      }).limit(10).orderBy('time','desc').get()
+      }).orderBy('time','asc').limit(10).get()
         .then(res=>{
+          // console.log('connect_list: ', res.data.map(v=>v.time))
           this.connectList = res.data
         })
         .catch(console.error)
@@ -222,7 +233,7 @@ export default {
   },
   mounted() {
     // this.getCodeImage()
-    console.log('mounted', this)
+    console.log('index mounted')
     this.setClientHeight()
     this.authHandle()
   }

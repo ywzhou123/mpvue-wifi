@@ -92,7 +92,8 @@ export default {
         success (res) {
           console.log('add',res)
           var wifi_id = res._id
-          that.getCodeImage(wifi_id)
+          // that.getCodeImage(wifi_id) // 使用云函数上传图片到七牛有丢失问题
+          that.getCodeUrl(wifi_id) // 使用python接口上传到七牛 稳定
         },
         fail (err) {
           console.log('add fail')
@@ -168,7 +169,6 @@ export default {
           var result = res.result
           console.log('url: ',result)
           if (result.status === 200){
-            // that.datapic = result.data
             that.$db.collection('wifi_list').doc(wifi_id).update({
               data: {
                 code_url: result.data

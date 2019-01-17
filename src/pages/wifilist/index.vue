@@ -191,7 +191,7 @@ export default {
       })
     },
     clickWifiHandle(ssid, bssid, e){
-      console.log('click wifi: ',ssid, bssid, e)
+      console.log('click wifi: ',ssid, bssid)
       wx.navigateTo({
         url: `/pages/create/main?ssid=${ssid}&bssid=${bssid}`
       })

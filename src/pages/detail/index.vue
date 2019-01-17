@@ -34,7 +34,6 @@ export default {
     return {
       windowWidth: 0,
       windowHeight: 0,
-      urls:[],
       wifi: {
         _id: '',
         ssid: '',
@@ -43,7 +42,9 @@ export default {
         title: '',
         remark: '',
         code_url:'',
-      }
+      },
+      downloadImagePath: '',
+      canvasImagePath: ''
     }
   },
   computed: {
@@ -58,15 +59,25 @@ export default {
           console.log(sres.tempFilePath);
           //确保图片已下载到本地，再开始进行canvas操作
           if (sres.tempFilePath){
-            that.createNewImage(sres.tempFilePath);
+            that.downloadImagePath = sres.tempFilePath
+            that.createNewImage();
           }
         }, fail: function (fres) {
           console.log('down',fres)
+          wx.showModal({
+            title: '小程序码下载失败',
+            showCancel: false,
+            success(res) {
+              wx.redirectTo({
+                url: '/pages/index/main'
+              })
+            }
+          })
         }
       })
     },
     /* 处理图片/文字绘制 */
-    createNewImage: function (urlPath){
+    createNewImage: function (){
       wx.showLoading({
         title: '生成中'
       })
@@ -83,7 +94,7 @@ export default {
       ctx.setFillStyle('white')
       ctx.fillRect(0, 0, 225, 350)
       //小程序码图
-      ctx.drawImage(urlPath, 125/2, 160/2, 200/2, 200/2 ); // px
+      ctx.drawImage(that.downloadImagePath, 125/2, 160/2, 200/2, 200/2 ); // px
       ctx.setFontSize(12) //设置字体大小，默认10
       ctx.setFillStyle('black')
       // ctx.setFillStyle('#5F6FEE')//文字颜色：默认黑色
@@ -135,8 +146,7 @@ export default {
           canvasId: 'canvas',
           success: function (res) {
             console.log(res.tempFilePath)
-            //previewImage，直接预览该图片
-            that.urls=[res.tempFilePath]
+            that.canvasImagePath = res.tempFilePath
           },
           fail (e) {
             console.log(e)
@@ -148,8 +158,9 @@ export default {
       }, 2000);
     },
     onPreviewImage(){
+      const urls = [this.canvasImagePath]
       wx.previewImage({
-        urls: this.urls// 需要预览的图片http链接列表
+        urls
       })
     },
     homeHandle(){
@@ -186,7 +197,7 @@ export default {
       this.$db.collection('wifi_list').doc(that.wifi._id).remove({
         success(){
           that.removeConnectDoc(that.wifi._id)
-          wx.navigateTo({
+          wx.redirectTo({
             url: '/pages/index/main'
           })
         },
@@ -218,7 +229,7 @@ export default {
     },
     getWifiDetail(wifi_id){
       const that = this;
-      this.$db.collection('wifi_list').doc(wifi_id).get({
+      that.$db.collection('wifi_list').doc(wifi_id).get({
         success(res) {
           that.wifi = Object.assign({}, that.wifi, res.data)
           that.downloadImage()
@@ -232,7 +243,19 @@ export default {
       })
     }
   },
+  created() {
+    console.log('detail created')
+
+  },
+  onShow(){
+    console.log('detail onShow')
+
+  },
   mounted() {
+    console.log('detail mounted')
+    this.wifi = []
+    this.canvasImagePath = ''
+    this.downloadImagePath = ''
     var query = this.$root.$mp.query
     var wifi_id = query.wifi_id
     if (query.wifi_id) {

@@ -31,7 +31,7 @@
 			"list": []
 		},
 		"miniprogram": {
-			"current": 3,
+			"current": 4,
 			"list": [
 				{
 					"id": 0,
@@ -66,6 +66,17 @@
 					"referrerInfo": {
 						"appId": "wxd8a26b2c1042fa2a",
 						"extraData": "{}"
+					}
+				},
+				{
+					"id": 4,
+					"name": "connect_fail",
+					"pathName": "pages/connectfail/main",
+					"query": "wifi_id=XDmCGZT75u22KIyq",
+					"scene": "1037",
+					"referrerInfo": {
+						"appId": "wxd8a26b2c1042fa2a",
+						"extraData": "{\"wifi\":{\"ssid\":\"weiwei\",\"title\":\"欢迎\",\"remark\":\"刚刚文稿工夺夺\"}}"
 					}
 				}
 			]

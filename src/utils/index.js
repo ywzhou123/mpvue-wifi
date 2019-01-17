@@ -17,6 +17,16 @@ export function formatTime (date) {
 
   return `${t1} ${t2}`
 }
+export function sortTime (a, b, s='asc') {
+  try {
+    const at = new Date(a)
+    const bt = new Date(b)
+    if (s === 'desc') return at < bt
+    else return at > bt
+  } catch (error) {
+    return false
+  }
+}
 //计算时间差
 export function beforeTime(oldDate, newDate){
   if ((! oldDate instanceof Date) && (! newDate instanceof Date)) return

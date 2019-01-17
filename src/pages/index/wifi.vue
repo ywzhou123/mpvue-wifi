@@ -45,6 +45,7 @@ export default {
         wifi_id: that.wifi._id
       }).get({
         success(res) {
+          console.log('get count: ',that.wifi.ssid, that.wifi._id, res.data)
           if (res.data.length){
             let count = 0
             res.data.forEach(c => {

@@ -6,8 +6,9 @@
         "pages/detail/main",
         "pages/create/main",
         "pages/connect/main",
-        "pages/logs/main",
-        "pages/counter/main"
+        "pages/connecting/main",
+        "pages/connectsuccess/main",
+        "pages/connectfail/main"
     ],
     "window": {
         "backgroundTextStyle": "light",

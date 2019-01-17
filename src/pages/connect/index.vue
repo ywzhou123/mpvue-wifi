@@ -40,11 +40,18 @@ export default {
   },
   computed: {
     backgroundImage () {
-      return `url(${this.img})`
+      // return `url(${this.img})`
+      let base64 = wx.getFileSystemManager().readFileSync(this.img, 'base64');
+      return `url(data:image/jpg;base64,${base64})`
     }
   },
   methods: {
     clickHandle(e){
+      wx.navigateTo({
+        url: `/pages/connecting/main?wifi_id=${this.wifi._id}`
+      })
+    },
+    clickHandle2(e){
       console.log('click connect', e)
       var that = this
       if (that.wifi.ssid) {
