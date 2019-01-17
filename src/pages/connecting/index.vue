@@ -75,6 +75,7 @@ export default {
     },
     readyConnect(){
       var that = this
+      that.connect()
       setTimeout(()=>{
         that.step1 = true
       }, 500)
@@ -84,9 +85,6 @@ export default {
       setTimeout(()=>{
         that.step3 = true
       }, 1500)
-      setTimeout(()=>{
-        that.connect()
-      }, 2000)
     },
     connect(){
       const that = this
@@ -102,13 +100,13 @@ export default {
             that.connectText = "连接成功"
             that.step4 = true
             that.createConnect()
-            wx.navigateTo({
+            wx.redirectTo({
               url: `/pages/connectsuccess/main?wifi_id=${that.wifi._id}`
             })
           },
           fail(err){
             console.log('connectWifi', err)
-            wx.navigateTo({
+            wx.redirectTo({
               url: `/pages/connectfail/main?wifi_id=${that.wifi._id}`
             })
           }
