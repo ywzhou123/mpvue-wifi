@@ -32,8 +32,6 @@ export default {
   },
   data(){
     return {
-      windowWidth: 0,
-      windowHeight: 0,
       wifi: {
         _id: '',
         ssid: '',
@@ -89,45 +87,46 @@ export default {
       // ctx.setFillStyle('witer')
       // ctx.fillRect(0, 0, 225, 300)
       console.log('ctx',ctx)
-      ctx.width = 225
+      const ratio = 2/wx.getStorageSync('ratio')
+      ctx.width = 225*ratio
       //白色背景
       ctx.setFillStyle('white')
-      ctx.fillRect(0, 0, 225, 350)
+      ctx.fillRect(0, 0, ctx.width, 350*ratio)
       //小程序码图
-      ctx.drawImage(that.downloadImagePath, 125/2, 160/2, 200/2, 200/2 ); // px
+      ctx.drawImage(that.downloadImagePath, 125*ratio/2, 160*ratio/2, 200*ratio/2, 200*ratio/2 ); // px
       ctx.setFontSize(12) //设置字体大小，默认10
       ctx.setFillStyle('black')
       // ctx.setFillStyle('#5F6FEE')//文字颜色：默认黑色
-      ctx.fillText(title, (ctx.width - ctx.measureText(title).width) / 2, 40)
+      ctx.fillText(title, (ctx.width - ctx.measureText(title).width*ratio) / 2, 40*ratio)
       //说明文字
       const desc = '扫一扫，连接WiFi'
       ctx.setFontSize(20) //设置字体大小，默认10
       ctx.setFillStyle('black')
-      ctx.fillText(desc, (ctx.width - ctx.measureText(desc).width) / 2, 240)
+      ctx.fillText(desc, (ctx.width - ctx.measureText(desc).width*ratio) / 2, 240*ratio)
       //ssid文字
       ctx.setFontSize(12) //设置字体大小，默认10
       ctx.setFillStyle('black')
-      const ssidX=(ctx.width - ctx.measureText(ssid).width) / 2
-      ctx.fillText(ssid, ssidX, 280)
-      ctx.drawImage('/static/image/wifi-green.png', ssidX-26, 266, 18, 18 );
+      const ssidX=(ctx.width - ctx.measureText(ssid).width*ratio) / 2
+      ctx.fillText(ssid, ssidX, 280*ratio)
+      ctx.drawImage('/static/image/wifi-green.png', ssidX-26*ratio, 266*ratio, 18*ratio, 18*ratio );
       //备注文字
       ctx.setFontSize(12) //设置字体大小，默认10
       ctx.setFillStyle('rgba(196, 164, 164, 0.603)')
-      ctx.fillText(remark, (ctx.width - ctx.measureText(remark).width) / 2, 320)
+      ctx.fillText(remark, (ctx.width - ctx.measureText(remark).width*ratio) / 2, 320*ratio)
       //底部背景
       ctx.setFillStyle('green')
-      ctx.fillRect(0, 340, 225, 350)
+      ctx.fillRect(0, 340*ratio, 225*ratio, 350*ratio)
       //底部文字
       ctx.setFillStyle('white')
       // ctx.font = "small-caps bold 35px Arial";//设置用户文本填充颜色
       ctx.setFontSize(4) //设置字体大小，默认10
       const company = '畅享无限WiFi码'
-      const companyX=(ctx.width - ctx.measureText(company).width) / 2
-      ctx.fillText(company, companyX, 345)
-      ctx.drawImage('/static/image/logo.png',  companyX-12, 340,10, 10 );
+      const companyX=(ctx.width - ctx.measureText(company).width*ratio) / 2
+      ctx.fillText(company, companyX, 345*ratio)
+      ctx.drawImage('/static/image/logo.png',  companyX-12*ratio, 340*ratio,10*ratio, 10*ratio );
       ctx.setFontSize(3) //设置字体大小，默认10
       const by = 'Powered by ywzhou'
-      ctx.fillText(by, companyX, 348)
+      ctx.fillText(by, companyX, 348*ratio)
 
       ctx.draw();//绘制图片
       that.savePic()
@@ -135,14 +134,14 @@ export default {
     //把生成好的图片保存到本地
     savePic () {
       let that = this;
-      let offset_left = (this.windowWidth - 303) / 2
+      const ratio = 2/wx.getStorageSync('ratio')
       console.log('savePic')
       setTimeout(() => {
         wx.canvasToTempFilePath({
           x: 0,
           y: 0,
-          width: 225,
-          height: 350,
+          width: 225*ratio,
+          height: 350*ratio,
           canvasId: 'canvas',
           success: function (res) {
             console.log(res.tempFilePath)
@@ -243,14 +242,6 @@ export default {
       })
     }
   },
-  created() {
-    console.log('detail created')
-
-  },
-  onShow(){
-    console.log('detail onShow')
-
-  },
   mounted() {
     console.log('detail mounted')
     this.wifi = []
@@ -267,14 +258,6 @@ export default {
       })
     }
 
-    // 获取手机宽高
-    const that = this
-    wx.getSystemInfo({
-      success: (res) => {
-          that.windowWidth = res.windowWidth
-          that.windowHeight = res.windowHeight
-      }
-    })
     wx.showShareMenu({
       withShareTicket: true
     })
@@ -282,7 +265,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang='scss' scoped>
 .canvas{
   background-color:white;
   /* margin: 40rpx 0; */

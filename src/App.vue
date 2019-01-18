@@ -16,6 +16,11 @@ export default {
           let ratio = 750 / clientWidth;
           // 算出高度(单位rpx)
           let height = clientHeight * ratio;
+
+          wx.setStorage({
+            key: 'ratio',
+            data: ratio
+          })
           // 设置高度
           wx.setStorage({
             key: 'windowHeight',
