@@ -1,27 +1,30 @@
-import request from './http'
+import request from './request.js'
 
-export function getAccessToken () {
-  console.log('gettoken')
-  var url = "https://api.weixin.qq.com/cgi-bin/token";
-  var data = {
+export function getAccessToken(){
+  const url = "https://api.weixin.qq.com/cgi-bin/token"
+  const params = {
     grant_type: "client_credential",
     appid: "wxd8a26b2c1042fa2a",
     secret: "38d0fa7b9a14e38ee2bfc4a696f94e08"
   }
-  return request('GET', url, data)
+  return handleRequest(request.get(url, params))
 }
 
-
-export function getWXACodeUnlimit(scene){
-  var access_token = getAccessToken()
-  if (!access_token) return
-  var url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit"
-  var data = {
+export function getWXACodeUnlimit(params={}) {
+  const access_token = getAccessToken()
+  if (!access_token) return Promise.reject()
+  const url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit"
+  const data = {
     access_token,
-    scene: scene,
+    scene: 'scene',
     page: 'page/index/main',
     width: '430',
     auto_color: true,
+    ...params
   }
-  return request('POST', url, data)
+  return handleRequest(request.post(url, data))
+}
+
+export function fetchLogin(params){
+  return request('GET', '/wixin-openid/', params)
 }

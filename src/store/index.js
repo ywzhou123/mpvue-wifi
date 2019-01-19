@@ -1,15 +1,30 @@
+import state from './state'
+import getters from './getters'
 import Vue from 'vue'
 import Vuex from 'vuex'
-
-import counterStore from '@/pages/counter/store'
+import actions from './actions'
+import mutations from './mutations'
+import createPersistedState from 'vuex-persistedstate' // 解决Vuex持久化插件-在F5刷新页面后数据不见的问题
+import indexStore from './modules/index'
 
 Vue.use(Vuex)
-const store = new Vuex.Store({
-  // 做模块化处理,每个功能一个store.js文件,然后统一在这边引入
+export default new Vuex.Store({
+  state(){
+    return state
+  },
+  getters,
+  actions,
+  mutations,
   modules: {
-    counterStore
-  }
+    index: indexStore,
+  },
+  plugins: [
+    createPersistedState({
+      storage: {
+        getItem: key => wx.getStorageSync(key),
+        setItem: (key, value) => wx.setStorageSync(key, value),
+        removeItem: key => wx.clearStorage()
+      }
+    })
+  ]
 })
-
-
-export default store

@@ -1,74 +1,30 @@
 <script>
-import { fail } from 'assert';
+
+import {
+  mapMutations,
+  mapActions
+} from 'vuex'
 
 export default {
   methods: {
-    setClientHeight(){
-      let that = this;
-      // 获取系统信息
-      wx.getSystemInfo({
-        success: function (res) {
-          // 获取可使用窗口宽度
-          let clientHeight = res.windowHeight;
-          // 获取可使用窗口高度
-          let clientWidth = res.windowWidth;
-          // 算出比例
-          let ratio = 750 / clientWidth;
-          // 算出高度(单位rpx)
-          let height = clientHeight * ratio;
+    ...mapActions(['getOpenId', 'getSystemInfo']),
+    ...mapMutations(['updateState']),
+  },
+  onLaunch() {
+    this.getOpenId()
+    this.getSystemInfo()
+  },
+  // onShow(){console.log('onShow')},
+  // onHide(){console.log('onHide')},
+  // beforeCreate(){console.log('beforeCreate')},
+  // created(){console.log('created')},
+  // beforeMount(){console.log('beforeMount')},
+  // mounted(){console.log('mounted')},
+  // beforeUpdate(){console.log('beforeUpdate')},
+  // updated(){console.log('updated')},
+  // beforeDestroy(){console.log('beforeDestroy')},
+  // destroyed(){console.log('destroyed')}
 
-          wx.setStorage({
-            key: 'ratio',
-            data: ratio
-          })
-          // 设置高度
-          wx.setStorage({
-            key: 'windowHeight',
-            data: `${height}rpx`
-          })
-          var system = '';
-          if (res.platform == 'android') system = parseInt(res.system.substr(8));
-          if (res.platform == 'ios') system = parseInt(res.system.substr(4));
-          // 版本号
-          wx.setStorage({
-            key: 'system',
-            data: system
-          })
-          //系统
-          wx.setStorage({
-            key: 'platform',
-            data: res.platform
-          })
-        }
-      })
-    },
-    setOpenId(){
-      var that = this
-      wx.cloud.callFunction({
-        name: 'login',
-        success(res) {
-          wx.setStorage({
-            key: 'openid',
-            data: res.result.openid
-          })
-        },
-        fail(err){
-          console.log('openid fail',err)
-        }
-      })
-    },
-  },
-  created () {
-    // 调用API从本地缓存中获取数据
-    // const logs = wx.getStorageSync('logs') || []
-    // logs.unshift(Date.now())
-    // wx.setStorageSync('logs', logs)
-    // console.log('app created and cache logs by setStorageSync')
-  },
-  mounted() {
-    this.setClientHeight()
-    this.setOpenId()
-  },
 }
 </script>
 

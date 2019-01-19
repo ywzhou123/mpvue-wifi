@@ -50,7 +50,6 @@ export default {
     },
     clickConnectHandle(e){
       var wifi_id = this.connect.wifi_id
-      console.log('click connect', wifi_id)
       if (wifi_id){
         wx.navigateTo({
           url: `/pages/connect/main?wifi_id=${wifi_id}`

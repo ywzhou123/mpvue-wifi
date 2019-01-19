@@ -1,16 +1,17 @@
-// http请求工具，封闭wx.request
+import { baseUrl } from '@/config'
 
-const request = function (method, url,  data = {}, isJson=true) {
+export default async function request (method, url,  data = {}, isJson=true) {
   let contentType = isJson ? 'application/json' : 'application/x-www-form-urlencoded'
-  let allow_methods = ['GET', 'POST', 'PATCH', 'DELETE']
-  if (!allow_methods.includes(method)) {
+  let allow_methods = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
+  if (!allow_methods.includes(method.toUpperCase())) {
     return new Error('请求方式错误')
   }
-  return new Promise((resolve, reject) => {
+  const reqUrl = url.startWith('http')? url:baseUrl+url
+  return await new Promise((resolve, reject) => {
     try {
       // 调用微信的请求方法,请求后端接口
       wx.request({
-        url,
+        url: reqUrl,
         data,
         method,
         header: { 'content-type': contentType },
@@ -29,6 +30,3 @@ const request = function (method, url,  data = {}, isJson=true) {
     }
   })
 }
-
-
-export default request

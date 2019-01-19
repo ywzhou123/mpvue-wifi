@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :style="{minHeight:min_height}" >
+  <div class="container" :style="{minHeight:windowHeight}" >
     <div class="userinfo">
       <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
     </div>
@@ -8,10 +8,7 @@
       <p class="info">在活动现场、会议室、公司前台、客厅等放置您的专属WiFi码，访客扫一扫即可免密连WiFi。还能查看微官网、产品介绍、公众号、一键签到！</p>
     </div>
     <div class="btn">
-      <button class="weui-btn" type="primary" @click="clickHandle" v-if="canIUse">我要创建WiFi码</button>
-      <button class="weui-btn"  type="primary" open-type="getUserInfo" lang="zh_CN" @getuserinfo="bindGetUserInfo" v-else>
-        获取用户信息
-      </button>
+      <button class="weui-btn" type="primary" @click="createWifiHandle">我要创建WiFi码</button>
     </div>
     <blank></blank>
     <div class="wifi-list">
@@ -33,6 +30,7 @@
     <div class="weui-footer">
       <div class="weui-footer__text"><span class="text">Powered by 畅享无限</span></div>
     </div>
+    <auth-modal/>
   </div>
 </template>
 
@@ -40,176 +38,48 @@
 import wifi from './wifi'
 import connect from './connect'
 import blank from '@/components/blank'
+import authModal from '@/components/authModal'
 import { setTimeout } from 'timers';
 import { sortTime } from '@/utils'
 
-export default {
-  data () {
-    return {
-      canIUse: false,
-      openid:'',
-      userInfo: {
-        nickName:'',
-        avatarUrl:'',
-        gender:0,
-        province:'',
-        city:'',
-        country:''
-      },
-      wifiList: [],
-      connectList: [],
-      min_height:'',
-    }
-  },
+import {
+  mapState,
+  mapGetters,
+  mapMutations,
+  mapActions
+} from 'vuex'
 
+export default {
   components: {
     wifi,
     connect,
-    blank
+    blank,
+    authModal
   },
   computed: {
+    ...mapGetters(['getOpenId']),
+    ...mapState(['openId', 'windowHeight','system','platform','ratio']),
+    ...mapState('index',['userInfo','wifiList','connectList']),
     getWifiListSorted(){
       return this.wifiList.sort((a,b)=>sortTime(a.create, b.create, 'desc'))
     },
     getConnectListSorted(){
       return this.connectList.sort((a,b)=>sortTime(a.time, b.time, 'desc'))
-    }
+    },
   },
   async onPullDownRefresh() {
-    if (this.openid){
-      console.log('lalala')
-      wx.showLoading({
-        title: 'Loading',
-      })
-      this.getWifiList()
-      this.getConnectList()
-      setTimeout(()=>{
-        wx.hideLoading()
-      }, 2000)
-    }
-    // 停止下拉刷新
-    wx.stopPullDownRefresh();
+    await this.getWifiList()
+    await this.getConnectList()
+    wx.stopPullDownRefresh()
   },
   methods: {
-    setClientHeight(){
-      let that = this;
-      // 获取系统信息
-      wx.getSystemInfo({
-        success: function (res) {
-          // 获取可使用窗口宽度
-          let clientHeight = res.windowHeight;
-          // 获取可使用窗口高度
-          let clientWidth = res.windowWidth;
-          // 算出比例
-          let ratio = 750 / clientWidth;
-          // 算出高度(单位rpx)
-          let height = clientHeight * ratio;
-          // 设置高度
-          that.min_height=`${height}rpx`
-        }
-      })
-    },
-    authHandle(){
-      var that = this
-      // 可以通过 wx.getSetting 先查询一下用户是否授权了 "scope.userInfo" 这个 scope
-      wx.getSetting({
-        success(res) {
-          console.log('getSetting',res)
-          if (!res.authSetting['scope.userInfo']) {
-            wx.authorize({
-              scope: 'scope.userInfo',
-              success(res) {
-                console.log(res)
-                that.canIUse=true
-                that.getUserInfo()
-              },
-              fail(err){
-                console.log(err)
-                that.canIUse=false
-              }
-            })
-          }else{
-            that.canIUse=true
-            that.getUserInfo()
-          }
-        }
-      })
-    },
-    //获取用户信息
-    getUserInfo (e) {
-      console.log('getuser',e)
-      // 调用登录接口
-      var that = this;
-      wx.login({
-        success () {
-          that.getOpenId()
-          wx.getUserInfo({
-            success(res){
-              that.userInfo = res.userInfo
-              console.log('userInfo',res.userInfo)
-            }
-          })
-        },
-        fail(res){
-          console.log('login fail: ', res.errMsg)
-        }
-      })
-    },
-    getOpenId(){
-      var that = this
-      console.log('get openid: ')
-      wx.cloud.callFunction({
-        name: 'login',
-        success(res) {
-          var result = res.result
-          that.openid=result.openid
-          that.getWifiList()
-          that.getConnectList()
-        },
-        fail(err){
-          console.log('openid fail',err)
-        }
-      })
-    },
-    bindGetUserInfo (e) {
-      console.log('bindGetUserInfo',e)
-      this.userInfo = e.mp.detail.userInfo
-      this.canIUse = true
-      this.getOpenId()
-    },
-    //跳转wifilist
-    clickHandle (e) {
+    ...mapActions('index',['getWifiList','getConnectList','getAuthSetting','getUserInfo']),
+    createWifiHandle (e) {
       wx.navigateTo({
         url: '/pages/wifilist/main'
       })
     },
-
-    //获取数据库 wifi_list
-    getWifiList () {
-      var that = this;
-      this.$db.collection('wifi_list').where({
-        _openid: that.openid,
-      }).orderBy('create','desc').limit(10).get()
-        .then(res=>{
-          // console.log('wifi_list: ', res.data.map(v=>v.create))
-          this.wifiList = res.data
-        })
-        .catch(console.error)
-    },
-    //获取数据库 connect_list
-    getConnectList () {
-      var that = this;
-      this.$db.collection('connect_list').where({
-        _openid: that.openid,
-      }).orderBy('time','asc').limit(10).get()
-        .then(res=>{
-          // console.log('connect_list: ', res.data.map(v=>v.time))
-          this.connectList = res.data
-        })
-        .catch(console.error)
-    },
     clickWifiHandle(wifi_id, e){
-      console.log('click wifi', wifi_id, e)
       if (wifi_id){
         wx.navigateTo({
           url: `/pages/detail/main?wifi_id=${wifi_id}`
@@ -233,9 +103,16 @@ export default {
   },
   mounted() {
     // this.getCodeImage()
-    console.log('index mounted')
-    this.setClientHeight()
-    this.authHandle()
+    console.log('index mount: ', this.openId)
+    this.getAuthSetting()
+    this.getWifiList()
+    this.getConnectList()
+  },
+  watch: {
+    getOpenId(newV,oldV) {
+      this.getWifiList()
+      this.getConnectList()
+    }
   }
 }
 </script>

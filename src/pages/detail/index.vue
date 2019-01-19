@@ -15,6 +15,9 @@
 
 <script>
 import codepic from './codepic'
+import { createNamespacedHelpers } from 'vuex'
+
+const { mapState, mapActions } = createNamespacedHelpers('index')
 
 export default {
   components: {

@@ -1,22 +1,17 @@
 import Vue from 'vue'
 import App from './App'
-// import request from './api/http'
 import '../static/css/weui.css'
 
+// import request from './api/http'
 // Vue.prototype.$http = request
 Vue.config.productionTip = false
 App.mpType = 'app'
 
-if (!wx.cloud) {
-  console.error('请使用 2.2.3 或以上的基础库以使用云能力')
-} else {
-  wx.cloud.init({
-    traceUser: true,
-  })
-  const db = wx.cloud.database({ env: 'env-72ff23' })
-  Vue.prototype.$db = db
-}
+import db from '@/store/db'
 
+// mpvue不支持在new Vue中导入store，因此放在原型上
+import store from '@/store'
+Vue.prototype.$store=store
 const app = new Vue(App)
 
 app.$mount()
