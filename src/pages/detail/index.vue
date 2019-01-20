@@ -14,14 +14,13 @@
 </template>
 
 <script>
-import codepic from './codepic'
-import { createNamespacedHelpers } from 'vuex'
-
-const { mapState, mapActions } = createNamespacedHelpers('index')
+// import codepic from './codepic'
+import * as Vuex from 'vuex'
+const { mapState, mapActions, mapGetters } = Vuex.createNamespacedHelpers('detail')
 
 export default {
   components: {
-    codepic
+    // codepic
   },
   onShareAppMessage(){
     return{
@@ -33,37 +32,41 @@ export default {
       }
     }
   },
-  data(){
-    return {
-      wifi: {
-        _id: '',
-        ssid: '',
-        bssid: '',
-        pass: '',
-        title: '',
-        remark: '',
-        code_url:'',
-      },
-      downloadImagePath: '',
-      canvasImagePath: ''
-    }
-  },
+  // data(){
+  //   return {
+  //     wifi: {
+  //       _id: '',
+  //       ssid: '',
+  //       bssid: '',
+  //       pass: '',
+  //       title: '',
+  //       remark: '',
+  //       code_url:'',
+  //     },
+  //     downloadImagePath: '',
+  //     canvasImagePath: ''
+  //   }
+  // },
   computed: {
+    ...mapGetters(['wifiDetail']),
+    ...mapState(['wifi','canvasImagePath']),
+    ...Vuex.mapState(['windowHeight','ratio'])
   },
   methods: {
+    ...mapActions(['getWifiDetail','getCanvasImagePath']),
     //url图片下载到本地
     downloadImage(){
       const that = this
       wx.downloadFile({
         url: that.wifi.code_url,
-        success: function (sres) {
-          console.log(sres.tempFilePath);
+        success: function (res) {
           //确保图片已下载到本地，再开始进行canvas操作
-          if (sres.tempFilePath){
-            that.downloadImagePath = sres.tempFilePath
-            that.createNewImage();
+          if (res.tempFilePath){
+            // that.downloadImagePath = res.tempFilePath
+            that.createNewImage(res.tempFilePath);
           }
-        }, fail: function (fres) {
+        },
+        fail: function (fres) {
           console.log('down',fres)
           wx.showModal({
             title: '小程序码下载失败',
@@ -78,7 +81,7 @@ export default {
       })
     },
     /* 处理图片/文字绘制 */
-    createNewImage: function (){
+    createNewImage(tempFilePath){
       wx.showLoading({
         title: '生成中'
       })
@@ -89,14 +92,15 @@ export default {
       // CanvasContext.fillStyle()
       // ctx.setFillStyle('witer')
       // ctx.fillRect(0, 0, 225, 300)
-      console.log('ctx',ctx)
-      const ratio = 2/wx.getStorageSync('ratio')
+      // const ratio = 2/wx.getStorageSync('ratio')
+      console.log('canvas: ',title,ssid,remark,that.ratio)
+      const ratio = 2/that.ratio
       ctx.width = 225*ratio
       //白色背景
       ctx.setFillStyle('white')
       ctx.fillRect(0, 0, ctx.width, 350*ratio)
       //小程序码图
-      ctx.drawImage(that.downloadImagePath, 125*ratio/2, 160*ratio/2, 200*ratio/2, 200*ratio/2 ); // px
+      ctx.drawImage(tempFilePath, 125*ratio/2, 160*ratio/2, 200*ratio/2, 200*ratio/2 ); // px
       ctx.setFontSize(12) //设置字体大小，默认10
       ctx.setFillStyle('black')
       // ctx.setFillStyle('#5F6FEE')//文字颜色：默认黑色
@@ -137,8 +141,8 @@ export default {
     //把生成好的图片保存到本地
     savePic () {
       let that = this;
-      const ratio = 2/wx.getStorageSync('ratio')
-      console.log('savePic')
+      // const ratio = 2/wx.getStorageSync('ratio')
+      const ratio = 2/that.ratio
       setTimeout(() => {
         wx.canvasToTempFilePath({
           x: 0,
@@ -147,8 +151,9 @@ export default {
           height: 350*ratio,
           canvasId: 'canvas',
           success: function (res) {
-            console.log(res.tempFilePath)
-            that.canvasImagePath = res.tempFilePath
+            console.log('savePic: ', res.tempFilePath)
+            // that.canvasImagePath = res.tempFilePath
+            that.getCanvasImagePath(res.tempFilePath)
           },
           fail (e) {
             console.log(e)
@@ -229,38 +234,36 @@ export default {
         }
       })
     },
-    getWifiDetail(wifi_id){
-      const that = this;
-      that.$db.collection('wifi_list').doc(wifi_id).get({
-        success(res) {
-          that.wifi = Object.assign({}, that.wifi, res.data)
-          that.downloadImage()
-        },
-        fail(){
-          wx.showToast({
-            icon: 'none',
-            title: '获取详情失败',
-          })
-        }
-      })
+    // getWifiDetail(wifi_id){
+    //   const that = this;
+    //   that.$db.collection('wifi_list').doc(wifi_id).get({
+    //     success(res) {
+    //       that.wifi = Object.assign({}, that.wifi, res.data)
+    //       that.downloadImage()
+    //     },
+    //     fail(){
+    //       wx.showToast({
+    //         icon: 'none',
+    //         title: '获取详情失败',
+    //       })
+    //     }
+    //   })
+    // }
+  },
+  watch: {
+    wifiDetail(newV, oldV){
+      console.log('watch wifi: ',newV,oldV)
+      if (newV !== oldV){
+        this.downloadImage()
+      }
     }
   },
   mounted() {
-    console.log('detail mounted')
-    this.wifi = []
-    this.canvasImagePath = ''
-    this.downloadImagePath = ''
+    // this.wifi = []
+    // this.canvasImagePath = ''
+    // this.downloadImagePath = ''
     var query = this.$root.$mp.query
-    var wifi_id = query.wifi_id
-    if (query.wifi_id) {
-      this.getWifiDetail(wifi_id)
-    }else{
-      wx.showToast({
-        icon: 'none',
-        title: '请求参数错误',
-      })
-    }
-
+    this.getWifiDetail(query.wifi_id)
     wx.showShareMenu({
       withShareTicket: true
     })

@@ -111,13 +111,6 @@ export function isIncludeChinese(str){
   return true // 带中文
 }
 
-export function showModal(title, content='',showCancel=false) {
-  wx.showModal({
-    title,
-    content,
-    showCancel,
-  })
-}
 export function showToast(title, icon='success') {
   wx.showToast({
     title,
