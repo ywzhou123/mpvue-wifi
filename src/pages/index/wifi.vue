@@ -2,7 +2,7 @@
   <div class="container">
     <div class="weui-flex">
         <div class="weui-flex__item item-img">
-          <img src="../../../static/image/wifi-example.png" alt="" class="img">
+          <img src="../../../static/image/wifi-example.png" mode="aspectFit" class="img">
         </div>
         <div class="weui-flex__item item-wifi">
             <div class="ssid">
@@ -11,13 +11,20 @@
             <div class="count">已连接{{count}}次</div>
         </div>
         <div class="weui-flex__item item-right">
-          <div class="right">></div>
+          <img src="/static/image/right.png" class="right">
         </div>
       </div>
   </div>
 </template>
 
 <script>
+import {
+  mapState,
+  mapGetters,
+  mapMutations,
+  mapActions
+} from 'vuex'
+
 export default {
   data(){
     return {
@@ -29,12 +36,7 @@ export default {
       type: Object,
       require: true,
       default: {
-        _id: '',
-        ssid: '',
-        pass: '',
-        title: '',
-        remark: '',
-        count: 0
+        ssid: ''
       }
     }
   },
@@ -57,6 +59,7 @@ export default {
     }
   },
   mounted() {
+    console.log('wifi.vue mounted()')
     this.getCount()
   },
 }
@@ -64,8 +67,8 @@ export default {
 
 <style scoped>
 .container{
-  padding: 10px;
-  height: 120px;
+  padding: 20rpx;
+  height: 240rpx;
   background-color: white;
 }
 .weui-flex {
@@ -73,13 +76,12 @@ export default {
   height: 100%;
 }
 .wifi {
-  padding: 10px;
+  padding: 20rpx;
 }
 .img{
-  width: 80px;
-  height: 100%;
-  margin-right: 10px;
-  background-color: #cccccc
+  height: 200rpx;
+  width: 150rpx;
+  margin-right: 20rpx;
 }
 .item-img{
   flex: 0;
@@ -94,7 +96,7 @@ export default {
 }
 .ssid{
   height: 100%;
-  font-size: 24px;
+  font-size: 48rpx;
   text-align: center;
   flex: 1;
   display: flex;
@@ -103,10 +105,12 @@ export default {
   align-self: center;
 }
 .count{
-  font-size: 12px;
+  font-size: 24rpx;
   color: rgba(92, 89, 89, 0.603);
 }
 .right{
   color:  rgba(92, 89, 89, 0.603);
+  width: 50rpx;
+  height: 50rpx;
 }
 </style>

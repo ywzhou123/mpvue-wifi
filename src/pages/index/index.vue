@@ -22,9 +22,7 @@
       <div class="title">最近使用</div>
     </div>
     <div class="connect-list">
-      <div v-for="(item, index) in getConnectListSorted" :key="index">
-        <connect :connect="item"></connect>
-      </div>
+      <connect v-for="(item, index) in getConnectListSorted" :key="index" :connect="item"></connect>
     </div>
     <blank height="40px" ></blank>
     <div class="weui-footer">
@@ -103,7 +101,6 @@ export default {
   },
   mounted() {
     // this.getCodeImage()
-    console.log('index mount: ', this.openId)
     this.getAuthSetting()
     this.getWifiList()
     this.getConnectList()

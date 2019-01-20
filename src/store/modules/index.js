@@ -1,4 +1,3 @@
-import createPersistedState from 'vuex-persistedstate'
 import db from '@/store/db'
 import authStore from './auth'
 
@@ -12,10 +11,12 @@ const userInfo = {
 }
 export default {
   namespaced: true,
-  state: {
-    userInfo,
-    wifiList: [],
-    connectList: [],
+  state(){
+    return {
+      userInfo,
+      wifiList: [],
+      connectList: [],
+    }
   },
   mutations: {
     startLoading() {
@@ -32,6 +33,15 @@ export default {
     updateConnectList(state, data) {
       state.connectList = data
     },
+    updateConnectWifiList(state, data) {
+      const wifi_id_list = data.map(wifi=>wifi._id)
+      state.connectList = state.connectList.map(con=>{
+        if (wifi_id_list.includes(con.wifi_id)) {
+          con.wifi = data.filter(wifi=>wifi._id==con.wifi_id)[0]
+        }
+        return con
+      })
+    },
     updateUserInfo(state, data) {
       state.userInfo = data
     },
@@ -39,7 +49,7 @@ export default {
   actions: {
     //获取数据库 wifi_list
     getWifiList({ state, commit, rootState }) {
-      console.log('wifi_list: ', rootState.openId)
+      // console.log('wifi_list: ', rootState.openId)
       if (rootState.openId) {
         commit('startLoading')
         db.collection('wifi_list').where({
@@ -49,7 +59,7 @@ export default {
           // .limit(10)
           .get()
           .then(res => {
-            console.log('getWifiList: ', res.data)
+            // console.log('getWifiList: ', res.data)
             commit('updateWifiList', res.data)
             commit('endLoading')
           })
@@ -57,7 +67,7 @@ export default {
       }
     },
     //获取数据库 connect_list
-    getConnectList({ state, commit, rootState }) {
+    getConnectList({ state, commit, rootState, dispatch }) {
       if (rootState.openId) {
         commit('startLoading')
         db.collection('connect_list').where({
@@ -67,12 +77,22 @@ export default {
           // .limit(10)
           .get()
           .then(res => {
-            console.log('getConnectList: ',res.data)
             commit('updateConnectList', res.data)
             commit('endLoading')
+            dispatch('getConnectWifiList', res.data.map(con=>con.wifi_id))
           })
           .catch(console.error)
       }
+    },
+    getConnectWifiList({ state, commit, rootState}, payload){
+      db.collection('wifi_list').where({
+        _id: db.command.in(payload)
+      })
+        .get()
+        .then(res => {
+          // console.log('getConnectWifiList: ', res.data)
+          commit('updateConnectWifiList', res.data)
+        })
     },
     getAuthSetting({ state, commit, rootState, dispatch }) {
       console.log('getAuthSetting: ',rootState)
@@ -104,14 +124,5 @@ export default {
   },
   modules: {
     auth: authStore
-  },
-  plugins: [
-    createPersistedState({
-      storage: {
-        getItem: key => wx.getStorageSync(key),
-        setItem: (key, value) => wx.setStorageSync(key, value),
-        removeItem: key => wx.clearStorage()
-      }
-    })
-  ]
+  }
 }

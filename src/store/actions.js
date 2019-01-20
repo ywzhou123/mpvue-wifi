@@ -15,7 +15,7 @@ export default {
         var system = '';
         if (res.platform == 'android') system = parseInt(res.system.substr(8));
         if (res.platform == 'ios') system = parseInt(res.system.substr(4));
-        console.log('getSystemInfo:', res)
+        // console.log('getSystemInfo:', res)
 
         commit('updateState', {
           system,
@@ -25,17 +25,21 @@ export default {
         })
       },
       fail(err) {
-        console.log('getSystemInfo: ', err)
+        // console.log('getSystemInfo: ', err)
       }
     })
   },
-  async getOpenId({ state, commit, rootState }) {
+  async getOpenId({ state, commit, rootState, dispatch }) {
     await wx.cloud.callFunction({
       name: 'login',
     }).then(res=>{
+      // console.log('getOpenId: ',res.result.openid)
       commit('updateState', {
         openId: res.result.openid,
       })
+    }).catch(err=>{
+      // console.log('getOpenId err: ',err)
+      dispatch('getOpenId')
     })
   },
 }

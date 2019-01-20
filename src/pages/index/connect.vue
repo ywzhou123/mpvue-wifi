@@ -2,7 +2,7 @@
   <div class="container"  @click="clickConnectHandle(connect.wifi_id, $event)">
     <div class="connect">
       <div class="ssid">
-        {{ssid}}
+        {{connect.wifi && connect.wifi.ssid}}
       </div>
       <div class="time">
         {{time}}使用过
@@ -14,6 +14,13 @@
 <script>
 import { beforeTime } from '../../utils'
 
+import {
+  mapState,
+  mapGetters,
+  mapMutations,
+  mapActions
+} from 'vuex'
+
 export default {
   props: {
     connect: {
@@ -21,14 +28,12 @@ export default {
       require: true,
       default: {
         wifi_id: '',
-        time: null,
+        time: '',
+        wifi: {
+          ssid: ''
+        }
       }
-    }
-  },
-  data(){
-    return {
-      ssid: ''
-    }
+    },
   },
   computed: {
     time(){
@@ -38,16 +43,6 @@ export default {
     }
   },
   methods: {
-    getWifiDetail(wifi_id){
-      const that = this;
-      if (wifi_id) {
-        this.$db.collection('wifi_list').doc(wifi_id).get({
-          success(res) {
-            that.ssid = res.data.ssid
-          }
-        })
-      }
-    },
     clickConnectHandle(e){
       var wifi_id = this.connect.wifi_id
       if (wifi_id){
@@ -57,9 +52,6 @@ export default {
       }
     },
   },
-  created() {
-    this.getWifiDetail(this.connect.wifi_id)
-  }
 }
 </script>
 

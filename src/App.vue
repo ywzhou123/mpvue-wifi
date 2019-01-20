@@ -10,7 +10,7 @@ export default {
     ...mapActions(['getOpenId', 'getSystemInfo']),
     ...mapMutations(['updateState']),
   },
-  onLaunch() {
+  mounted() {
     this.getOpenId()
     this.getSystemInfo()
   },
