@@ -7,6 +7,7 @@ import mutations from './mutations'
 import createPersistedState from 'vuex-persistedstate' // 解决Vuex持久化插件-在F5刷新页面后数据不见的问题
 import indexStore from './modules/index'
 import detailStore from './modules/detail'
+import wifiListStore from './modules/wifiList'
 
 Vue.use(Vuex)
 export default new Vuex.Store({
@@ -18,7 +19,8 @@ export default new Vuex.Store({
   mutations,
   modules: {
     index: indexStore,
-    detail: detailStore
+    detail: detailStore,
+    wifiList: wifiListStore,
   },
   plugins: [
     createPersistedState({
