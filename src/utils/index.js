@@ -117,3 +117,24 @@ export function showToast(title, icon='success') {
     icon
   })
 }
+
+let Base64 = require('js-base64').Base64;
+const salt = 'sjnv$u049qrh[c9hnq98--8Y(*Rg-gf4'
+export function b64encode(value){
+  try {
+    return Base64.encode(salt + value.toString())
+  } catch (error) {
+    return value
+  }
+}
+export function b64decode(value) {
+  try {
+    let dstr = Base64.decode(value.toString())
+    if (dstr.startsWith(salt)){
+      return dstr.slice(salt.length)
+    }
+    return value
+  } catch (error) {
+    return value
+  }
+}
